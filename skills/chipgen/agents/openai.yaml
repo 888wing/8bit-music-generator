@@ -1,0 +1,6 @@
+interface:
+  display_name: "Chipgen"
+  short_description: "Generate seeded 8-bit BGM and SFX locally"
+  default_prompt: "Use $chipgen to generate seeded 8-bit game music and sound effects for my project."
+policy:
+  allow_implicit_invocation: true
