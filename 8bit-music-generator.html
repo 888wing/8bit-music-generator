@@ -223,6 +223,7 @@ canvas{display:block;width:100%;height:300px}
       <div class="transport actionbar">
         <button class="btn btn-red" id="gen" data-i18n="generateSong">Generate</button>
         <button class="btn" id="variants" disabled data-i18n="variants5">Variants ×5</button>
+        <button class="btn" id="musicPack" disabled data-i18n="musicPack">Pack ×6</button>
         <button class="btn" id="play" disabled data-i18n="play">Play</button>
         <button class="btn" id="stop" disabled data-i18n="stop">Stop</button>
         <button class="btn" id="copySeed" disabled data-i18n="copySeed">Copy seed</button>
@@ -362,6 +363,15 @@ const MOODS={
     rhythms:[[2,2,2,2,2,2,2,2],[2,2,2,2,4,2,2],[2,2,2,-2,2,2,4],[4,2,2,2,2,4]],
     p2:'arp',arpPat:[0,1,2,3],arpRate:1,bass:'pump',drums:'boss',duty1:.125,duty2:.25,gate:.8},
 };
+
+const MUSIC_PACK_CUES=[
+  {cue:'theme',label:'Theme',labelZh:'主題',mood:'adventure',bars:16},
+  {cue:'town',label:'Town',labelZh:'村莊',mood:'town',bars:16},
+  {cue:'dungeon',label:'Dungeon',labelZh:'地城',mood:'dungeon',bars:16},
+  {cue:'battle',label:'Battle',labelZh:'戰鬥',mood:'battle',bars:8},
+  {cue:'boss',label:'Boss',labelZh:'魔王戰',mood:'boss',bars:16},
+  {cue:'ending',label:'Ending',labelZh:'結局',mood:'sad',bars:8},
+];
 
 const DRUMPATS={
   drive:{k:'x...x...x...x...',s:'....x.......x...',h:'x.x.x.x.x.x.x.x.',vel:1},
@@ -567,13 +577,26 @@ function songDur(song){return song.bars*16*(60/song.bpm/4);}
 // ---------- SFX 參數生成 ----------
 const SFX_CATS={
   coin:{label:'金幣／拾取',labelEn:'Coin / pickup'},
+  confirm:{label:'確認',labelEn:'Confirm'},
+  cancel:{label:'取消／錯誤',labelEn:'Cancel / error'},
   jump:{label:'跳躍',labelEn:'Jump'},
+  dash:{label:'衝刺',labelEn:'Dash'},
+  land:{label:'落地',labelEn:'Land'},
   laser:{label:'雷射／射擊',labelEn:'Laser / shot'},
+  slash:{label:'斬擊',labelEn:'Slash'},
   hit:{label:'受擊',labelEn:'Hit / damage'},
+  block:{label:'格擋',labelEn:'Block'},
   explosion:{label:'爆炸',labelEn:'Explosion'},
   powerup:{label:'強化',labelEn:'Power-up'},
+  heal:{label:'治療',labelEn:'Heal'},
+  teleport:{label:'傳送',labelEn:'Teleport'},
+  door:{label:'門／機關',labelEn:'Door / switch'},
+  chest:{label:'寶箱',labelEn:'Chest'},
   blip:{label:'介面嗶聲',labelEn:'UI blip'},
+  alert:{label:'警報',labelEn:'Alert'},
   fall:{label:'下墜／失敗',labelEn:'Fall / fail'},
+  defeat:{label:'失敗／死亡',labelEn:'Defeat / death'},
+  whoosh:{label:'呼嘯',labelEn:'Whoosh'},
 };
 function genSfx(cat,seed){
   seed=seed>>>0;
@@ -584,13 +607,33 @@ function genSfx(cat,seed){
   const r=mulberry32(seed);
   const p={cat,seed,wave:'pulse',duty:.5,f0:440,mode:'none',f1:0,slideT:0,curve:'exp',
            steps:null,vib:null,env:{att:.001,sus:.05,dec:.2,punch:0},vol:.55,
-           nRate0:1,nRate1:1,filt:null};
+           nRate0:1,nRate1:1,filt:null,layers:null};
+  const layer=(delay,overrides)=>Object.assign({delay},overrides||{});
   switch(cat){
     case 'coin':
       p.f0=mtof(pick(r,[83,84,86,88,89,91]));
       p.mode='steps';
       p.steps=[{t:.06+r()*.03,semi:pick(r,[5,7,12])}];
       p.env={att:.001,sus:.07+r()*.05,dec:.15+r()*.15,punch:.4};
+      break;
+    case 'confirm':
+      p.duty=pick(r,[.25,.5]);
+      p.f0=mtof(74+irnd(r,8));
+      p.mode='steps';
+      p.steps=[{t:.04+r()*.015,semi:4},{t:.08+r()*.02,semi:7}];
+      p.env={att:.001,sus:.08+r()*.04,dec:.08+r()*.06,punch:.25};
+      p.vol=.42;
+      break;
+    case 'cancel':
+      p.duty=.125;
+      p.f0=mtof(70+irnd(r,8));
+      p.mode='slide';p.f1=p.f0*(.45+r()*.18);p.slideT=.09+r()*.06;p.curve='lin';
+      p.env={att:.001,sus:.045+r()*.025,dec:.06+r()*.05,punch:.22};
+      p.vol=.42;
+      p.layers=[
+        layer(0,{}),
+        layer(.012,{wave:'noise',nRate0:1.2+r()*.4,nRate1:.32+r()*.12,filt:{type:'highpass',f0:3200+r()*1200,f1:1200+r()*600,q:.8},env:{att:.001,sus:.012,dec:.055,punch:.15},vol:.12}),
+      ];
       break;
     case 'laser':
       p.duty=pick(r,[.125,.25]);
@@ -604,6 +647,28 @@ function genSfx(cat,seed){
       p.mode='slide';p.f1=p.f0*(2.1+r()*1.6);p.slideT=.12+r()*.12;p.curve='lin';
       p.env={att:.002,sus:.12+r()*.12,dec:.1+r()*.1,punch:.15};
       p.env.sus=p.slideT;
+      break;
+    case 'dash':
+      p.wave='noise';
+      p.nRate0=1.6+r()*.6;p.nRate1=.13+r()*.16;
+      p.filt={type:'highpass',f0:5200+r()*1800,f1:850+r()*500,q:.85};
+      p.env={att:.001,sus:.035+r()*.025,dec:.14+r()*.09,punch:.25};
+      p.vol=.5;
+      p.layers=[
+        layer(0,{}),
+        layer(.008,{wave:'pulse',duty:.125,f0:mtof(66+irnd(r,8)),mode:'slide',f1:mtof(78+irnd(r,10)),slideT:.04+r()*.03,curve:'lin',env:{att:.001,sus:.015,dec:.035,punch:.3},vol:.16}),
+      ];
+      break;
+    case 'land':
+      p.wave='tri';
+      p.f0=mtof(42+irnd(r,7));
+      p.mode='slide';p.f1=p.f0*.55;p.slideT=.07+r()*.04;
+      p.env={att:.001,sus:.025+r()*.02,dec:.13+r()*.08,punch:.45};
+      p.vol=.5;
+      p.layers=[
+        layer(0,{}),
+        layer(.002,{wave:'noise',nRate0:.7+r()*.4,nRate1:.18+r()*.12,filt:{type:'lowpass',f0:2200+r()*1200,f1:320+r()*160,q:.75},env:{att:.001,sus:.012,dec:.09+r()*.06,punch:.55},vol:.34}),
+      ];
       break;
     case 'powerup':
       p.f0=mtof(60+irnd(r,10));
@@ -619,39 +684,163 @@ function genSfx(cat,seed){
         p.env={att:.002,sus:p.slideT,dec:.18+r()*.15,punch:.15};
       }
       break;
+    case 'heal':
+      p.wave='tri';
+      p.f0=mtof(62+irnd(r,8));
+      p.mode='steps';
+      p.steps=[4,7,12,16].map((semi,i)=>({t:(.055+r()*.012)*(i+1),semi}));
+      p.vib={rate:8+r()*3,cents:30+r()*35};
+      p.env={att:.002,sus:.28+r()*.08,dec:.22+r()*.12,punch:.12};
+      p.vol=.36;
+      p.layers=[
+        layer(0,{}),
+        layer(.03,{wave:'pulse',duty:.25,f0:p.f0*2,mode:'steps',steps:[{t:.06,semi:7},{t:.13,semi:12}],vib:null,env:{att:.001,sus:.18+r()*.05,dec:.18+r()*.08,punch:.12},vol:.2}),
+      ];
+      break;
+    case 'teleport':
+      p.duty=pick(r,[.125,.25]);
+      p.f0=mtof(54+irnd(r,10));
+      p.mode='slide';p.f1=p.f0*(4+r()*3);p.slideT=.34+r()*.16;p.curve='lin';
+      p.vib={rate:12+r()*5,cents:120+r()*90};
+      p.env={att:.002,sus:p.slideT,dec:.2+r()*.15,punch:.2};
+      p.vol=.42;
+      p.layers=[
+        layer(0,{}),
+        layer(.04,{wave:'noise',nRate0:.9+r()*.5,nRate1:1.7+r()*.7,filt:{type:'bandpass',f0:700+r()*500,f1:4200+r()*1800,q:1.2},env:{att:.004,sus:.18+r()*.08,dec:.18+r()*.1,punch:.1},vol:.16}),
+      ];
+      break;
+    case 'door':
+      p.wave='tri';
+      p.f0=mtof(40+irnd(r,8));
+      p.mode='slide';p.f1=p.f0*(.65+r()*.12);p.slideT=.3+r()*.18;p.curve='lin';
+      p.vib={rate:4+r()*2,cents:45+r()*30};
+      p.env={att:.004,sus:p.slideT,dec:.18+r()*.12,punch:.12};
+      p.vol=.34;
+      p.layers=[
+        layer(0,{}),
+        layer(.018,{wave:'noise',nRate0:.42+r()*.22,nRate1:.24+r()*.12,filt:{type:'lowpass',f0:1200+r()*700,f1:260+r()*140,q:.7},env:{att:.006,sus:.16+r()*.08,dec:.2+r()*.12,punch:.18},vol:.2}),
+      ];
+      break;
+    case 'chest':
+      p.duty=.25;
+      p.f0=mtof(67+irnd(r,7));
+      p.mode='steps';
+      p.steps=[4,7,12,19].map((semi,i)=>({t:(.045+r()*.012)*(i+1),semi}));
+      p.env={att:.001,sus:.22+r()*.08,dec:.18+r()*.1,punch:.28};
+      p.vol=.42;
+      p.layers=[
+        layer(0,{}),
+        layer(.06,{wave:'tri',f0:p.f0*2,mode:'steps',steps:[{t:.04,semi:7},{t:.1,semi:12}],env:{att:.002,sus:.14+r()*.04,dec:.22+r()*.08,punch:.1},vol:.18}),
+      ];
+      break;
     case 'explosion':
       p.wave='noise';
       p.nRate0=.8+r()*.7;p.nRate1=.12+r()*.18;
       p.filt={type:'lowpass',f0:2200+r()*2200,f1:220+r()*280,q:.7};
       p.env={att:.002,sus:.04+r()*.1,dec:.35+r()*.55,punch:.6};
-      p.vol=.7;break;
+      p.vol=.66;
+      p.layers=[
+        layer(0,{}),
+        layer(.006,{wave:'tri',f0:mtof(38+irnd(r,8)),mode:'slide',f1:mtof(24+irnd(r,7)),slideT:.18+r()*.12,env:{att:.001,sus:.035+r()*.04,dec:.25+r()*.2,punch:.7},vol:.24}),
+      ];
+      break;
     case 'hit':
-      if(r()<.5){
-        p.wave='noise';p.nRate0=.6+r()*.3;p.nRate1=.2+r()*.15;
-        p.filt={type:'lowpass',f0:1600+r()*900,f1:380+r()*220,q:.8};
-        p.env={att:.001,sus:.012,dec:.07+r()*.08,punch:.5};
-      }else{
-        p.duty=.25;p.f0=mtof(55+irnd(r,10));
-        p.mode='slide';p.f1=p.f0*.3;p.slideT=.07+r()*.05;
-        p.env={att:.001,sus:.015,dec:.07+r()*.07,punch:.4};
-      }
-      p.vol=.6;break;
+      p.wave='noise';p.nRate0=.65+r()*.35;p.nRate1=.18+r()*.14;
+      p.filt={type:'lowpass',f0:1600+r()*1000,f1:360+r()*220,q:.8};
+      p.env={att:.001,sus:.012,dec:.075+r()*.07,punch:.55};
+      p.vol=.52;
+      p.layers=[
+        layer(0,{}),
+        layer(.003,{wave:'pulse',duty:.25,f0:mtof(54+irnd(r,10)),mode:'slide',f1:mtof(38+irnd(r,8)),slideT:.055+r()*.045,env:{att:.001,sus:.01,dec:.06+r()*.05,punch:.38},vol:.24}),
+      ];
+      break;
+    case 'slash':
+      p.wave='noise';
+      p.nRate0=1.2+r()*.5;p.nRate1=.3+r()*.2;
+      p.filt={type:'bandpass',f0:5200+r()*1800,f1:1200+r()*700,q:1.1};
+      p.env={att:.001,sus:.016+r()*.012,dec:.12+r()*.08,punch:.45};
+      p.vol=.5;
+      p.layers=[
+        layer(0,{}),
+        layer(.006,{wave:'pulse',duty:.125,f0:mtof(86+irnd(r,8)),mode:'slide',f1:mtof(68+irnd(r,8)),slideT:.06+r()*.035,env:{att:.001,sus:.012,dec:.05+r()*.04,punch:.25},vol:.14}),
+      ];
+      break;
+    case 'block':
+      p.duty=.125;
+      p.f0=mtof(52+irnd(r,10));
+      p.mode='steps';p.steps=[{t:.025,semi:12},{t:.055,semi:-5}];
+      p.env={att:.001,sus:.025+r()*.02,dec:.11+r()*.07,punch:.55};
+      p.vol=.46;
+      p.layers=[
+        layer(0,{}),
+        layer(.002,{wave:'noise',nRate0:.9+r()*.35,nRate1:.3+r()*.2,filt:{type:'bandpass',f0:2600+r()*1000,f1:900+r()*400,q:1},env:{att:.001,sus:.008,dec:.06+r()*.04,punch:.5},vol:.22}),
+      ];
+      break;
     case 'blip':
       p.wave=r()<.3?'tri':'pulse';
       p.f0=mtof(74+irnd(r,14));
       if(r()<.4){p.mode='steps';p.steps=[{t:.045,semi:pick(r,[12,7,-5])}];}
       p.env={att:.001,sus:.02+r()*.025,dec:.03+r()*.05,punch:.2};
       p.vol=.45;break;
+    case 'alert':
+      p.duty=.125;
+      p.f0=mtof(76+irnd(r,7));
+      p.env={att:.001,sus:.035+r()*.015,dec:.04+r()*.025,punch:.35};
+      p.vol=.36;
+      p.layers=[
+        layer(0,{}),
+        layer(.12,{f0:p.f0,env:{att:.001,sus:.035+r()*.015,dec:.04+r()*.025,punch:.35},vol:.34}),
+        layer(.24,{f0:p.f0*Math.pow(2,7/12),env:{att:.001,sus:.035+r()*.015,dec:.05+r()*.025,punch:.35},vol:.34}),
+      ];
+      break;
     case 'fall':
       p.f0=mtof(69+irnd(r,8));
       p.mode='slide';p.f1=p.f0*.13;p.slideT=.5+r()*.35;p.curve='lin';
       p.vib={rate:7+r()*5,cents:60+r()*70};
       p.env={att:.003,sus:p.slideT,dec:.12+r()*.12,punch:.1};
       p.vol=.5;break;
+    case 'defeat':
+      p.wave='tri';
+      p.f0=mtof(62+irnd(r,8));
+      p.mode='slide';p.f1=p.f0*.2;p.slideT=.55+r()*.25;p.curve='lin';
+      p.vib={rate:5+r()*3,cents:45+r()*45};
+      p.env={att:.004,sus:p.slideT,dec:.28+r()*.16,punch:.08};
+      p.vol=.42;
+      p.layers=[
+        layer(0,{}),
+        layer(.02,{wave:'noise',nRate0:.5+r()*.25,nRate1:.15+r()*.1,filt:{type:'lowpass',f0:900+r()*500,f1:190+r()*100,q:.7},env:{att:.006,sus:.12+r()*.08,dec:.34+r()*.14,punch:.1},vol:.16}),
+      ];
+      break;
+    case 'whoosh':
+      p.wave='noise';
+      p.nRate0=.28+r()*.18;p.nRate1=1.5+r()*.8;
+      p.filt={type:'highpass',f0:700+r()*500,f1:5200+r()*1600,q:.85};
+      p.env={att:.008,sus:.16+r()*.12,dec:.16+r()*.11,punch:.08};
+      p.vol=.42;
+      break;
   }
   return p;
 }
-function sfxDur(p){return p.env.att+p.env.sus+p.env.dec+.08;}
+function sfxLayerParams(p,l,i){
+  const q=Object.assign({},p,l,{layers:null});
+  q.seed=(l.seed!==undefined?l.seed:sfxChildSeed(p.seed,i))>>>0;
+  q.env=Object.assign({},p.env,l.env||{});
+  q.steps=l.steps===undefined?p.steps:l.steps;
+  q.vib=l.vib===undefined?p.vib:l.vib;
+  q.filt=l.filt===undefined?p.filt:l.filt;
+  return q;
+}
+function sfxDur(p){
+  if(p.layers&&p.layers.length){
+    let d=0;
+    for(let i=0;i<p.layers.length;i++){
+      const l=p.layers[i],q=sfxLayerParams(p,l,i);
+      d=Math.max(d,(l.delay||0)+q.env.att+q.env.sus+q.env.dec+.08);
+    }
+    return d;
+  }
+  return p.env.att+p.env.sus+p.env.dec+.08;
+}
 function sfxChildSeed(seed,k){return (seed+0x9E3779B9*(k+1))>>>0;}
 //===PURE-END===
 
@@ -761,6 +950,13 @@ function scheduleSong(g,song,t0,mute){
 
 // ---------- SFX 排程與渲染 ----------
 function schedSfx(g,dest,t,p){
+  if(p.layers&&p.layers.length){
+    for(let i=0;i<p.layers.length;i++){
+      const l=p.layers[i];
+      schedSfx(g,dest,t+(l.delay||0),sfxLayerParams(p,l,i));
+    }
+    return;
+  }
   const ctx=g.ctx,e=p.env;
   const tA=t+e.att;
   const tP=tA+Math.min(0.03,e.sus*0.5+0.002);
@@ -932,7 +1128,7 @@ const I18N={
     tabMusic:'Music',tabSfx:'SFX',
     mood:'Mood',key:'Key',bars:'Bars',seed:'Seed',
     auto:'Auto',random:'Random',newSeedTitle:'New seed',
-    generateSong:'Generate',variants5:'Variants ×5',play:'Play',stop:'Stop',copySeed:'Copy seed',
+    generateSong:'Generate',variants5:'Variants ×5',musicPack:'Pack ×6',play:'Play',stop:'Stop',copySeed:'Copy seed',
     loop:'Loop',spaceHint:'Space = play / stop',mute:'Mute',
     pulse1:'PULSE 1 Lead',pulse2:'PULSE 2 Harmony',triangle:'TRIANGLE Bass',noise:'NOISE Drums',
     pulse1Volume:'Pulse 1 volume',pulse2Volume:'Pulse 2 volume',triangleVolume:'Triangle volume',noiseVolume:'Noise volume',
@@ -942,8 +1138,8 @@ const I18N={
     load:'Load',copy:'Copy seed',
     downloadMidi:'Download MIDI',downloadMix:'Download mix WAV',downloadStems:'Download stems ZIP',
     downloadWav:'Download WAV',downloadSfxZip:'Download variant ZIP ×5',
-    musicHint:'DAW workflow: import <b>MIDI</b> into a chiptune instrument, or drag the <b>stems ZIP</b> into a DAW for EQ, compression, and reverb. Variants keep mood, key, bars, and BPM fixed while changing derived seeds.',
-    sfxHint:'Click a category to generate and audition immediately. Lock seed to reproduce one result. Variant ZIP renders 5 related sounds for in-game random pools. Output is 44.1k / 16-bit mono WAV.',
+    musicHint:'DAW workflow: import <b>MIDI</b> into a chiptune instrument, or drag the <b>stems ZIP</b> into a DAW for EQ, compression, and reverb. Variants keep one scene fixed; Pack ×6 creates Theme, Town, Dungeon, Battle, Boss, and Ending cues from one seed family.',
+    sfxHint:'Click a category to generate and audition immediately. Lock seed to reproduce one result. Variant ZIP renders 5 related sounds for in-game random pools. Layered categories combine transient, body, and tail for cleaner game-ready SFX.',
     readyMusic:'READY — Press Generate to start',
     readySfx:'READY — Pick a category to generate SFX',
     copied:'Copied {label}: {value}',
@@ -957,6 +1153,7 @@ const I18N={
     historyCleared:'Candidate history cleared',
     songLabel:'{key} {scale} · {bpm} BPM · {bars} bars · seed {seed}',
     variantsGenerated:'Generated 5 related music candidates — base seed {seed}',
+    musicPackGenerated:'Generated {count} scene cues — base seed {seed}',
     nowPlaying:'Playing — {label}',
     downloadedMidi:'Downloaded MIDI — {label}',
     renderingMix:'Rendering mix...',
@@ -981,7 +1178,7 @@ const I18N={
     tabMusic:'音樂',tabSfx:'音效',
     mood:'風格',key:'調性',bars:'小節數',seed:'種子',
     auto:'自動',random:'隨機',newSeedTitle:'擲一個新種子',
-    generateSong:'產生樂曲',variants5:'變體 ×5',play:'播放',stop:'停止',copySeed:'複製種子',
+    generateSong:'產生樂曲',variants5:'變體 ×5',musicPack:'配樂包 ×6',play:'播放',stop:'停止',copySeed:'複製種子',
     loop:'循環播放',spaceHint:'空白鍵＝播放／停止',mute:'靜音',
     pulse1:'PULSE 1 主旋律',pulse2:'PULSE 2 和聲',triangle:'TRIANGLE 貝斯',noise:'NOISE 鼓組',
     pulse1Volume:'Pulse 1 音量',pulse2Volume:'Pulse 2 音量',triangleVolume:'Triangle 音量',noiseVolume:'Noise 音量',
@@ -991,8 +1188,8 @@ const I18N={
     load:'載入',copy:'複製 seed',
     downloadMidi:'下載 MIDI',downloadMix:'下載混音 WAV',downloadStems:'下載分軌 ZIP',
     downloadWav:'下載 WAV',downloadSfxZip:'下載變體 ZIP ×5',
-    musicHint:'DAW 後製流程：匯入 <b>MIDI</b> 後掛 chiptune 音源（例如免費的 Magical 8bit Plug 2）自由換音色；或直接把<b>分軌 ZIP</b> 拉進 DAW 做 EQ／壓縮／殘響。「變體 ×5」會固定風格、調性、小節和 BPM，只用衍生 seed 產生同一音樂方向的候選。',
-    sfxHint:'點類別即生成並試聽，重點是快速擲骰篩靈感。「鎖定種子」後同一類別＋種子永遠出同一個音效；「變體 ZIP」會用衍生種子渲染 5 個同類近親，方便遊戲內做隨機音效池。輸出 44.1k / 16-bit 單聲道 WAV。',
+    musicHint:'DAW 後製流程：匯入 <b>MIDI</b> 後掛 chiptune 音源自由換音色；或直接把<b>分軌 ZIP</b> 拉進 DAW 做 EQ／壓縮／殘響。「變體 ×5」固定單一場景參數；「配樂包 ×6」用同一 seed family 產生 Theme、Town、Dungeon、Battle、Boss、Ending 六種場景。',
+    sfxHint:'點類別即生成並試聽，重點是快速擲骰篩靈感。「鎖定種子」後同一類別＋種子永遠出同一個音效；「變體 ZIP」會用衍生種子渲染 5 個同類近親，方便遊戲內做隨機音效池。分層類別會組合起音、主體與尾音，品質更接近可直接放入遊戲。',
     readyMusic:'READY — 按「產生樂曲」開始',
     readySfx:'READY — 點一個類別產生音效',
     copied:'已複製 {label}：{value}',
@@ -1006,6 +1203,7 @@ const I18N={
     historyCleared:'候選紀錄已清空',
     songLabel:'{key} {scale} · {bpm} BPM · {bars} 小節 · 種子 {seed}',
     variantsGenerated:'已生成 5 個同風格變體候選 — 基準 seed {seed}',
+    musicPackGenerated:'已生成 {count} 個場景 cue — 基準 seed {seed}',
     nowPlaying:'播放中 — {label}',
     downloadedMidi:'已下載 MIDI — {label}',
     renderingMix:'渲染混音中…',
@@ -1032,6 +1230,10 @@ function t(key,vars){
 }
 function moodLabel(key){const m=MOODS[key];return currentLang==='zh'?m.label:m.labelEn;}
 function sfxCatLabel(key){const c=SFX_CATS[key];return currentLang==='zh'?c.label:c.labelEn;}
+function cueLabel(key){
+  const c=MUSIC_PACK_CUES.find(x=>x.cue===key);
+  return c?(currentLang==='zh'?c.labelZh:c.label):key;
+}
 function scaleLabel(key){return SCALE_LABELS[key][currentLang]||SCALE_LABELS[key].en;}
 function waveLabel(p){
   if(p.wave==='noise')return t('waveNoise');
@@ -1065,7 +1267,10 @@ function saveCandidates(){
   localStorage.setItem(HISTORY_KEY,JSON.stringify(candidates.slice(0,12)));
 }
 function itemTitle(item){
-  if(item.type==='music')return moodLabel(item.mood)+' · '+item.key+' '+scaleLabel(item.scaleName);
+  if(item.type==='music'){
+    const cue=item.cue?cueLabel(item.cue)+' · ':'';
+    return cue+moodLabel(item.mood)+' · '+item.key+' '+scaleLabel(item.scaleName);
+  }
   const wave=item.wave?waveLabel(item):item.waveLabel||'';
   return sfxCatLabel(item.cat)+' · '+wave;
 }
@@ -1099,12 +1304,13 @@ function renderCandidates(){
     '</article>';
   }).join('');
 }
-function musicCandidateFromSong(song,tag){
-  return {
-    id:'music-'+song.mood+'-'+KEYS[song.rootPc]+'-'+song.bars+'-'+song.bpm+'-'+song.seed,
+function musicCandidateFromSong(song,tag,extra){
+  const x=extra||{};
+  return Object.assign({
+    id:'music-'+(x.cue||tag||'song')+'-'+song.mood+'-'+KEYS[song.rootPc]+'-'+song.bars+'-'+song.bpm+'-'+song.seed,
     type:'music',tag:tag||'',seed:song.seed,mood:song.mood,key:KEYS[song.rootPc],
     scaleName:song.scaleName,bpm:song.bpm,bars:song.bars,duration:songDur(song),
-  };
+  },x);
 }
 function sfxCandidateFromCurrent(){
   const p=curSfx.p;
@@ -1176,7 +1382,7 @@ $('langZh').addEventListener('click',()=>setLanguage('zh'));
 
 // ================= 音樂模式 =================
 const moodSel=$('mood'),keySel=$('key'),barsSel=$('bars'),bpmIn=$('bpm'),seedIn=$('seed');
-const genBtn=$('gen'),variantBtn=$('variants'),playBtn=$('play'),stopBtn=$('stop'),copySeedBtn=$('copySeed'),loopChk=$('loop');
+const genBtn=$('gen'),variantBtn=$('variants'),musicPackBtn=$('musicPack'),playBtn=$('play'),stopBtn=$('stop'),copySeedBtn=$('copySeed'),loopChk=$('loop');
 const dlMidiBtn=$('dlMidi'),dlWavBtn=$('dlWav'),dlStemsBtn=$('dlStems');
 
 function refreshMusicOptions(){
@@ -1230,6 +1436,7 @@ function songManifest(extra){
   },extra||{}),null,2);
 }
 function musicVariantSeed(seed,k){return (seed+0x9E3779B9*(k+1))>>>0;}
+function musicPackSeed(seed,k){return k===0?(seed>>>0):musicVariantSeed(seed,k-1);}
 function currentMusicParams(seedOverride){
   let seed=seedOverride!==undefined?seedOverride:parseInt(seedIn.value,10);
   if(!Number.isFinite(seed)){seed=Math.floor(Math.random()*1e6);seedIn.value=seed;}
@@ -1241,7 +1448,7 @@ function currentMusicParams(seedOverride){
   };
 }
 function enableMusicActions(){
-  playBtn.disabled=stopBtn.disabled=variantBtn.disabled=copySeedBtn.disabled=dlMidiBtn.disabled=dlWavBtn.disabled=dlStemsBtn.disabled=false;
+  playBtn.disabled=stopBtn.disabled=variantBtn.disabled=musicPackBtn.disabled=copySeedBtn.disabled=dlMidiBtn.disabled=dlWavBtn.disabled=dlStemsBtn.disabled=false;
 }
 function makeMusicFromFields(opts){
   const options=opts||{};
@@ -1273,6 +1480,19 @@ variantBtn.addEventListener('click',()=>{
     pushCandidate(musicCandidateFromSong(variant,'variant'));
   }
   setStatus(t('variantsGenerated',{seed:baseSeed}));
+});
+musicPackBtn.addEventListener('click',()=>{
+  if(!song)makeMusicFromFields();
+  if(!song)return;
+  const baseSeed=song.seed,baseKey=KEYS[song.rootPc];
+  for(let i=MUSIC_PACK_CUES.length-1;i>=0;i--){
+    const cue=MUSIC_PACK_CUES[i];
+    const cueSong=generateSong({seed:musicPackSeed(baseSeed,i),mood:cue.mood,key:baseKey,bars:cue.bars,bpm:0});
+    pushCandidate(musicCandidateFromSong(cueSong,'pack',{
+      cue:cue.cue,packIndex:i,baseSeed,packKey:baseKey,
+    }));
+  }
+  setStatus(t('musicPackGenerated',{count:MUSIC_PACK_CUES.length,seed:baseSeed}));
 });
 copySeedBtn.addEventListener('click',()=>{if(song)copyText(song.seed,t('musicSeed'));});
 

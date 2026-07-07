@@ -16,7 +16,7 @@ Use English-first wording for new feature work, generated manifests, and user-fa
 1. Resolve the output directory. If the user does not specify one, use `generated-audio/` in the current project.
 2. Choose parameters from the user request using the brief-to-parameters rules below. If a seed is not provided, choose one and report it so the result can be reproduced.
 3. Run `node <skill-dir>/scripts/chipgen.js list` when you need valid moods, keys, or SFX categories.
-4. Generate the requested assets.
+4. Generate the requested assets. Use `music-pack` when the user asks for a soundtrack pack, scene set, or "different scenes but same style".
 5. Read the JSON manifest from stdout and report the generated file paths, seed, mood/category, BPM, and any MIDI/stem/tres outputs.
 
 ## Brief-to-Parameters
@@ -41,16 +41,44 @@ When a brief mixes moods, choose the gameplay function first, then emotion. Exam
 - If BPM is unspecified, let the generator choose within the mood range. If the user asks for faster/slower, set BPM near the top/bottom of the selected mood range. If the user says "not too slow", avoid `sad` unless the emotion demands it, or set `sad` near 92 BPM.
 - For final or production-ready BGM, include `--midi --stems`. For exploration, include `--variants 5` unless the user asks for a single result.
 
+### Music pack selection
+
+Use `music-pack` when the request asks for a complete small soundtrack, a scene pack, a set of cues, or music for multiple game scenes in one coherent style.
+
+`music-pack` generates six cues from one seed family and one resolved key:
+
+- Theme: `adventure`, 16 bars
+- Town: `town`, 16 bars
+- Dungeon: `dungeon`, 16 bars
+- Battle: `battle`, 8 bars
+- Boss: `boss`, 16 bars
+- Ending: `sad`, 8 bars
+
+This is not the same as `--variants`. Variants keep one scene fixed and change only derived seeds. A music pack changes the scene function while keeping the tonal center and seed family coherent.
+
 ### SFX category selection
 
 - Use `coin` for pickup, collect, reward, gem, item acquired, score, or confirm-positive.
+- Use `confirm` for menu OK, accept, positive UI click, small success, or dialogue continue.
+- Use `cancel` for back, deny, invalid, UI error, closed menu, or negative feedback.
 - Use `jump` for jump, hop, bounce, spring, UI upward motion, or character lift.
+- Use `dash` for dash, dodge, quick movement, speed burst, or air step.
+- Use `land` for landing, stomp, heavy footstep, ground touch, or small body impact.
 - Use `laser` for shoot, projectile, zap, ray, spell cast, blaster, or quick magic attack.
-- Use `hit` for damage, punch, impact, hurt, block, enemy struck, or UI error tap.
+- Use `slash` for sword, blade, claw, swipe, cut, melee attack, or fast whoosh-hit.
+- Use `hit` for damage, punch, impact, hurt, enemy struck, or body contact.
+- Use `block` for shield, parry, guard, armor hit, deflect, or metal/stone impact.
 - Use `explosion` for explosion, break, crash, blast, destruction, barrel, bomb, or big impact.
 - Use `powerup` for upgrade, level up, unlock, buff, heal, rare item, success flourish, or transformation.
+- Use `heal` for healing, restore, potion, revive, magic sparkle, or gentle positive effect.
+- Use `teleport` for teleport, vanish, warp, portal, respawn, or phase shift.
+- Use `door` for door, switch, lever, gate, mechanism, lock, or heavy UI panel.
+- Use `chest` for treasure chest, reward reveal, item fanfare, loot open, or rare pickup.
 - Use `blip` for UI cursor, menu move, small select, typing, notification, low-key beep, or neutral interface feedback.
+- Use `alert` for warning, alarm, detection, exclamation, low health, or timed danger.
 - Use `fall` for falling, fail, drop, lose, wrong answer, down transition, or game-over sting.
+- Use `defeat` for death, player lost, game over, enemy defeated, or dramatic failure.
+- Use `whoosh` for air movement, swing prep, transition, fast pass-by, or abstract movement.
 
 For repeated gameplay SFX, generate `--variants 5`. For UI sounds, generate 3-5 candidates and keep durations short by choosing `blip`, `coin`, or `hit` rather than `random`.
 
@@ -88,6 +116,17 @@ node <skill-dir>/scripts/chipgen.js music \
   --out generated-audio/bgm
 ```
 
+Generate a six-cue music pack:
+
+```bash
+node <skill-dir>/scripts/chipgen.js music-pack \
+  --key C \
+  --seed 42 \
+  --stems \
+  --midi \
+  --out generated-audio/bgm-pack
+```
+
 Generate one SFX:
 
 ```bash
@@ -113,7 +152,7 @@ node <skill-dir>/scripts/chipgen.js sfx \
 
 Supported moods are `adventure`, `battle`, `town`, `dungeon`, `sad`, and `boss`.
 
-Supported SFX categories are `coin`, `jump`, `laser`, `hit`, `explosion`, `powerup`, `blip`, `fall`, and `random`.
+Supported SFX categories are `coin`, `confirm`, `cancel`, `jump`, `dash`, `land`, `laser`, `slash`, `hit`, `block`, `explosion`, `powerup`, `heal`, `teleport`, `door`, `chest`, `blip`, `alert`, `fall`, `defeat`, `whoosh`, and `random`.
 
 Useful options:
 
@@ -133,6 +172,8 @@ Useful options:
 For game-ready BGM, prefer `--stems --midi` unless the user only wants a quick preview.
 
 For music exploration, generate 5-10 candidates from one base seed. In CLI output, `variantIndex: 0` is the base seed and later items use `variantSeed = (baseSeed + 0x9E3779B9 * index) >>> 0` with index starting at 1. Keep `mood`, resolved `key`, `bars`, and `bpm` fixed so the candidates feel related rather than random.
+
+For a compact game soundtrack, prefer `music-pack --stems --midi`. It produces Theme, Town, Dungeon, Battle, Boss, and Ending cues from one seed family.
 
 For SFX meant for repeated in-game playback, prefer `--variants 5` and keep the same category with different seeded variants.
 

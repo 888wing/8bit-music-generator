@@ -17,31 +17,40 @@ const SCALES={major:[0,2,4,5,7,9,11],minor:[0,2,3,5,7,8,10],dorian:[0,2,3,5,7,9,
 const SCALE_CN={major:'大調',minor:'小調',dorian:'多利安',harm:'和聲小調'};
 
 const MOODS={
-  adventure:{label:'冒險旅程',scale:'major',bpm:[142,164],
+  adventure:{label:'冒險旅程',labelEn:'Adventure',scale:'major',bpm:[142,164],
     progs:[[0,4,5,3],[0,3,0,4],[0,5,3,4],[3,4,0,0]],
     rhythms:[[3,3,2,4,4],[2,2,4,4,2,2],[4,2,2,4,-2,2],[2,2,2,2,4,4],[6,2,4,4]],
     p2:'arp',arpPat:[0,1,2,1],arpRate:2,bass:'oct8',drums:'drive',duty1:.5,duty2:.25,gate:.9},
-  battle:{label:'戰鬥',scale:'minor',bpm:[168,188],
+  battle:{label:'戰鬥',labelEn:'Battle',scale:'minor',bpm:[168,188],
     progs:[[0,5,6,4],[0,3,6,4],[0,6,0,4],[0,5,3,4]],
     rhythms:[[2,2,2,2,2,2,4],[2,2,4,2,2,2,2],[2,-2,2,2,2,2,4],[4,2,2,2,2,2,2],[2,2,2,2,8]],
     p2:'arp',arpPat:[0,2,1,2],arpRate:1,bass:'pump',drums:'battle',duty1:.25,duty2:.125,gate:.8},
-  town:{label:'村莊／日常',scale:'major',bpm:[104,124],
+  town:{label:'村莊／日常',labelEn:'Town / daily life',scale:'major',bpm:[104,124],
     progs:[[0,5,3,4],[0,3,4,4],[0,5,1,4],[0,1,3,4]],
     rhythms:[[4,2,2,4,4],[4,4,4,4],[6,2,4,4],[4,2,2,8],[3,3,2,8]],
     p2:'offbeat',arpPat:[0,1,2,1],arpRate:2,bass:'walk',drums:'soft',duty1:.5,duty2:.5,gate:.95},
-  dungeon:{label:'地城／神祕',scale:'dorian',bpm:[92,112],
+  dungeon:{label:'地城／神祕',labelEn:'Dungeon / mystery',scale:'dorian',bpm:[92,112],
     progs:[[0,6,5,6],[0,2,0,6],[0,6,0,4],[0,3,6,5]],
     rhythms:[[6,2,4,4],[4,4,8],[8,4,4],[4,-4,4,4],[2,2,4,8]],
     p2:'pad',arpPat:[0,1,2,1],arpRate:2,bass:'half',drums:'sparse',duty1:.125,duty2:.25,gate:.95},
-  sad:{label:'哀傷',scale:'minor',bpm:[76,92],
+  sad:{label:'哀傷',labelEn:'Sad / memory',scale:'minor',bpm:[76,92],
     progs:[[0,5,2,6],[0,3,5,6],[0,5,0,4],[0,2,5,4]],
     rhythms:[[8,4,4],[4,4,8],[6,2,8],[12,4],[4,8,4]],
     p2:'pad',arpPat:[0,1,2,1],arpRate:2,bass:'half',drums:'faint',duty1:.5,duty2:.25,gate:.98},
-  boss:{label:'魔王戰',scale:'harm',bpm:[176,196],
+  boss:{label:'魔王戰',labelEn:'Boss battle',scale:'harm',bpm:[176,196],
     progs:[[0,1,0,4],[0,5,1,4],[0,3,1,4],[0,6,1,4]],
     rhythms:[[2,2,2,2,2,2,2,2],[2,2,2,2,4,2,2],[2,2,2,-2,2,2,4],[4,2,2,2,2,4]],
     p2:'arp',arpPat:[0,1,2,3],arpRate:1,bass:'pump',drums:'boss',duty1:.125,duty2:.25,gate:.8},
 };
+
+const MUSIC_PACK_CUES=[
+  {cue:'theme',label:'Theme',labelZh:'主題',mood:'adventure',bars:16},
+  {cue:'town',label:'Town',labelZh:'村莊',mood:'town',bars:16},
+  {cue:'dungeon',label:'Dungeon',labelZh:'地城',mood:'dungeon',bars:16},
+  {cue:'battle',label:'Battle',labelZh:'戰鬥',mood:'battle',bars:8},
+  {cue:'boss',label:'Boss',labelZh:'魔王戰',mood:'boss',bars:16},
+  {cue:'ending',label:'Ending',labelZh:'結局',mood:'sad',bars:8},
+];
 
 const DRUMPATS={
   drive:{k:'x...x...x...x...',s:'....x.......x...',h:'x.x.x.x.x.x.x.x.',vel:1},
@@ -235,8 +244,27 @@ function songToMidi(song){
 function songDur(song){return song.bars*16*(60/song.bpm/4);}
 
 const SFX_CATS={
-  coin:{label:'金幣／拾取'},jump:{label:'跳躍'},laser:{label:'雷射／射擊'},hit:{label:'受擊'},
-  explosion:{label:'爆炸'},powerup:{label:'強化'},blip:{label:'介面嗶聲'},fall:{label:'下墜／失敗'},
+  coin:{label:'金幣／拾取',labelEn:'Coin / pickup'},
+  confirm:{label:'確認',labelEn:'Confirm'},
+  cancel:{label:'取消／錯誤',labelEn:'Cancel / error'},
+  jump:{label:'跳躍',labelEn:'Jump'},
+  dash:{label:'衝刺',labelEn:'Dash'},
+  land:{label:'落地',labelEn:'Land'},
+  laser:{label:'雷射／射擊',labelEn:'Laser / shot'},
+  slash:{label:'斬擊',labelEn:'Slash'},
+  hit:{label:'受擊',labelEn:'Hit / damage'},
+  block:{label:'格擋',labelEn:'Block'},
+  explosion:{label:'爆炸',labelEn:'Explosion'},
+  powerup:{label:'強化',labelEn:'Power-up'},
+  heal:{label:'治療',labelEn:'Heal'},
+  teleport:{label:'傳送',labelEn:'Teleport'},
+  door:{label:'門／機關',labelEn:'Door / switch'},
+  chest:{label:'寶箱',labelEn:'Chest'},
+  blip:{label:'介面嗶聲',labelEn:'UI blip'},
+  alert:{label:'警報',labelEn:'Alert'},
+  fall:{label:'下墜／失敗',labelEn:'Fall / fail'},
+  defeat:{label:'失敗／死亡',labelEn:'Defeat / death'},
+  whoosh:{label:'呼嘯',labelEn:'Whoosh'},
 };
 function genSfx(cat,seed){
   seed=seed>>>0;
@@ -247,13 +275,33 @@ function genSfx(cat,seed){
   const r=mulberry32(seed);
   const p={cat,seed,wave:'pulse',duty:.5,f0:440,mode:'none',f1:0,slideT:0,curve:'exp',
            steps:null,vib:null,env:{att:.001,sus:.05,dec:.2,punch:0},vol:.55,
-           nRate0:1,nRate1:1,filt:null};
+           nRate0:1,nRate1:1,filt:null,layers:null};
+  const layer=(delay,overrides)=>Object.assign({delay},overrides||{});
   switch(cat){
     case 'coin':
       p.f0=mtof(pick(r,[83,84,86,88,89,91]));
       p.mode='steps';
       p.steps=[{t:.06+r()*.03,semi:pick(r,[5,7,12])}];
       p.env={att:.001,sus:.07+r()*.05,dec:.15+r()*.15,punch:.4};
+      break;
+    case 'confirm':
+      p.duty=pick(r,[.25,.5]);
+      p.f0=mtof(74+irnd(r,8));
+      p.mode='steps';
+      p.steps=[{t:.04+r()*.015,semi:4},{t:.08+r()*.02,semi:7}];
+      p.env={att:.001,sus:.08+r()*.04,dec:.08+r()*.06,punch:.25};
+      p.vol=.42;
+      break;
+    case 'cancel':
+      p.duty=.125;
+      p.f0=mtof(70+irnd(r,8));
+      p.mode='slide';p.f1=p.f0*(.45+r()*.18);p.slideT=.09+r()*.06;p.curve='lin';
+      p.env={att:.001,sus:.045+r()*.025,dec:.06+r()*.05,punch:.22};
+      p.vol=.42;
+      p.layers=[
+        layer(0,{}),
+        layer(.012,{wave:'noise',nRate0:1.2+r()*.4,nRate1:.32+r()*.12,filt:{type:'highpass',f0:3200+r()*1200,f1:1200+r()*600,q:.8},env:{att:.001,sus:.012,dec:.055,punch:.15},vol:.12}),
+      ];
       break;
     case 'laser':
       p.duty=pick(r,[.125,.25]);
@@ -267,6 +315,28 @@ function genSfx(cat,seed){
       p.mode='slide';p.f1=p.f0*(2.1+r()*1.6);p.slideT=.12+r()*.12;p.curve='lin';
       p.env={att:.002,sus:.12,dec:.1+r()*.1,punch:.15};
       p.env.sus=p.slideT;
+      break;
+    case 'dash':
+      p.wave='noise';
+      p.nRate0=1.6+r()*.6;p.nRate1=.13+r()*.16;
+      p.filt={type:'highpass',f0:5200+r()*1800,f1:850+r()*500,q:.85};
+      p.env={att:.001,sus:.035+r()*.025,dec:.14+r()*.09,punch:.25};
+      p.vol=.5;
+      p.layers=[
+        layer(0,{}),
+        layer(.008,{wave:'pulse',duty:.125,f0:mtof(66+irnd(r,8)),mode:'slide',f1:mtof(78+irnd(r,10)),slideT:.04+r()*.03,curve:'lin',env:{att:.001,sus:.015,dec:.035,punch:.3},vol:.16}),
+      ];
+      break;
+    case 'land':
+      p.wave='tri';
+      p.f0=mtof(42+irnd(r,7));
+      p.mode='slide';p.f1=p.f0*.55;p.slideT=.07+r()*.04;
+      p.env={att:.001,sus:.025+r()*.02,dec:.13+r()*.08,punch:.45};
+      p.vol=.5;
+      p.layers=[
+        layer(0,{}),
+        layer(.002,{wave:'noise',nRate0:.7+r()*.4,nRate1:.18+r()*.12,filt:{type:'lowpass',f0:2200+r()*1200,f1:320+r()*160,q:.75},env:{att:.001,sus:.012,dec:.09+r()*.06,punch:.55},vol:.34}),
+      ];
       break;
     case 'powerup':
       p.f0=mtof(60+irnd(r,10));
@@ -282,41 +352,166 @@ function genSfx(cat,seed){
         p.env={att:.002,sus:p.slideT,dec:.18+r()*.15,punch:.15};
       }
       break;
+    case 'heal':
+      p.wave='tri';
+      p.f0=mtof(62+irnd(r,8));
+      p.mode='steps';
+      p.steps=[4,7,12,16].map((semi,i)=>({t:(.055+r()*.012)*(i+1),semi}));
+      p.vib={rate:8+r()*3,cents:30+r()*35};
+      p.env={att:.002,sus:.28+r()*.08,dec:.22+r()*.12,punch:.12};
+      p.vol=.36;
+      p.layers=[
+        layer(0,{}),
+        layer(.03,{wave:'pulse',duty:.25,f0:p.f0*2,mode:'steps',steps:[{t:.06,semi:7},{t:.13,semi:12}],vib:null,env:{att:.001,sus:.18+r()*.05,dec:.18+r()*.08,punch:.12},vol:.2}),
+      ];
+      break;
+    case 'teleport':
+      p.duty=pick(r,[.125,.25]);
+      p.f0=mtof(54+irnd(r,10));
+      p.mode='slide';p.f1=p.f0*(4+r()*3);p.slideT=.34+r()*.16;p.curve='lin';
+      p.vib={rate:12+r()*5,cents:120+r()*90};
+      p.env={att:.002,sus:p.slideT,dec:.2+r()*.15,punch:.2};
+      p.vol=.42;
+      p.layers=[
+        layer(0,{}),
+        layer(.04,{wave:'noise',nRate0:.9+r()*.5,nRate1:1.7+r()*.7,filt:{type:'bandpass',f0:700+r()*500,f1:4200+r()*1800,q:1.2},env:{att:.004,sus:.18+r()*.08,dec:.18+r()*.1,punch:.1},vol:.16}),
+      ];
+      break;
+    case 'door':
+      p.wave='tri';
+      p.f0=mtof(40+irnd(r,8));
+      p.mode='slide';p.f1=p.f0*(.65+r()*.12);p.slideT=.3+r()*.18;p.curve='lin';
+      p.vib={rate:4+r()*2,cents:45+r()*30};
+      p.env={att:.004,sus:p.slideT,dec:.18+r()*.12,punch:.12};
+      p.vol=.34;
+      p.layers=[
+        layer(0,{}),
+        layer(.018,{wave:'noise',nRate0:.42+r()*.22,nRate1:.24+r()*.12,filt:{type:'lowpass',f0:1200+r()*700,f1:260+r()*140,q:.7},env:{att:.006,sus:.16+r()*.08,dec:.2+r()*.12,punch:.18},vol:.2}),
+      ];
+      break;
+    case 'chest':
+      p.duty=.25;
+      p.f0=mtof(67+irnd(r,7));
+      p.mode='steps';
+      p.steps=[4,7,12,19].map((semi,i)=>({t:(.045+r()*.012)*(i+1),semi}));
+      p.env={att:.001,sus:.22+r()*.08,dec:.18+r()*.1,punch:.28};
+      p.vol=.42;
+      p.layers=[
+        layer(0,{}),
+        layer(.06,{wave:'tri',f0:p.f0*2,mode:'steps',steps:[{t:.04,semi:7},{t:.1,semi:12}],env:{att:.002,sus:.14+r()*.04,dec:.22+r()*.08,punch:.1},vol:.18}),
+      ];
+      break;
     case 'explosion':
       p.wave='noise';
       p.nRate0=.8+r()*.7;p.nRate1=.12+r()*.18;
       p.filt={type:'lowpass',f0:2200+r()*2200,f1:220+r()*280,q:.7};
       p.env={att:.002,sus:.04+r()*.1,dec:.35+r()*.55,punch:.6};
-      p.vol=.7;break;
+      p.vol=.66;
+      p.layers=[
+        layer(0,{}),
+        layer(.006,{wave:'tri',f0:mtof(38+irnd(r,8)),mode:'slide',f1:mtof(24+irnd(r,7)),slideT:.18+r()*.12,env:{att:.001,sus:.035+r()*.04,dec:.25+r()*.2,punch:.7},vol:.24}),
+      ];
+      break;
     case 'hit':
-      if(r()<.5){
-        p.wave='noise';p.nRate0=.6+r()*.3;p.nRate1=.2+r()*.15;
-        p.filt={type:'lowpass',f0:1600+r()*900,f1:380+r()*220,q:.8};
-        p.env={att:.001,sus:.012,dec:.07+r()*.08,punch:.5};
-      }else{
-        p.duty=.25;p.f0=mtof(55+irnd(r,10));
-        p.mode='slide';p.f1=p.f0*.3;p.slideT=.07+r()*.05;
-        p.env={att:.001,sus:.015,dec:.07+r()*.07,punch:.4};
-      }
-      p.vol=.6;break;
+      p.wave='noise';p.nRate0=.65+r()*.35;p.nRate1=.18+r()*.14;
+      p.filt={type:'lowpass',f0:1600+r()*1000,f1:360+r()*220,q:.8};
+      p.env={att:.001,sus:.012,dec:.075+r()*.07,punch:.55};
+      p.vol=.52;
+      p.layers=[
+        layer(0,{}),
+        layer(.003,{wave:'pulse',duty:.25,f0:mtof(54+irnd(r,10)),mode:'slide',f1:mtof(38+irnd(r,8)),slideT:.055+r()*.045,env:{att:.001,sus:.01,dec:.06+r()*.05,punch:.38},vol:.24}),
+      ];
+      break;
+    case 'slash':
+      p.wave='noise';
+      p.nRate0=1.2+r()*.5;p.nRate1=.3+r()*.2;
+      p.filt={type:'bandpass',f0:5200+r()*1800,f1:1200+r()*700,q:1.1};
+      p.env={att:.001,sus:.016+r()*.012,dec:.12+r()*.08,punch:.45};
+      p.vol=.5;
+      p.layers=[
+        layer(0,{}),
+        layer(.006,{wave:'pulse',duty:.125,f0:mtof(86+irnd(r,8)),mode:'slide',f1:mtof(68+irnd(r,8)),slideT:.06+r()*.035,env:{att:.001,sus:.012,dec:.05+r()*.04,punch:.25},vol:.14}),
+      ];
+      break;
+    case 'block':
+      p.duty=.125;
+      p.f0=mtof(52+irnd(r,10));
+      p.mode='steps';p.steps=[{t:.025,semi:12},{t:.055,semi:-5}];
+      p.env={att:.001,sus:.025+r()*.02,dec:.11+r()*.07,punch:.55};
+      p.vol=.46;
+      p.layers=[
+        layer(0,{}),
+        layer(.002,{wave:'noise',nRate0:.9+r()*.35,nRate1:.3+r()*.2,filt:{type:'bandpass',f0:2600+r()*1000,f1:900+r()*400,q:1},env:{att:.001,sus:.008,dec:.06+r()*.04,punch:.5},vol:.22}),
+      ];
+      break;
     case 'blip':
       p.wave=r()<.3?'tri':'pulse';
       p.f0=mtof(74+irnd(r,14));
       if(r()<.4){p.mode='steps';p.steps=[{t:.045,semi:pick(r,[12,7,-5])}];}
       p.env={att:.001,sus:.02+r()*.025,dec:.03+r()*.05,punch:.2};
       p.vol=.45;break;
+    case 'alert':
+      p.duty=.125;
+      p.f0=mtof(76+irnd(r,7));
+      p.env={att:.001,sus:.035+r()*.015,dec:.04+r()*.025,punch:.35};
+      p.vol=.36;
+      p.layers=[
+        layer(0,{}),
+        layer(.12,{f0:p.f0,env:{att:.001,sus:.035+r()*.015,dec:.04+r()*.025,punch:.35},vol:.34}),
+        layer(.24,{f0:p.f0*Math.pow(2,7/12),env:{att:.001,sus:.035+r()*.015,dec:.05+r()*.025,punch:.35},vol:.34}),
+      ];
+      break;
     case 'fall':
       p.f0=mtof(69+irnd(r,8));
       p.mode='slide';p.f1=p.f0*.13;p.slideT=.5+r()*.35;p.curve='lin';
       p.vib={rate:7+r()*5,cents:60+r()*70};
       p.env={att:.003,sus:p.slideT,dec:.12+r()*.12,punch:.1};
       p.vol=.5;break;
+    case 'defeat':
+      p.wave='tri';
+      p.f0=mtof(62+irnd(r,8));
+      p.mode='slide';p.f1=p.f0*.2;p.slideT=.55+r()*.25;p.curve='lin';
+      p.vib={rate:5+r()*3,cents:45+r()*45};
+      p.env={att:.004,sus:p.slideT,dec:.28+r()*.16,punch:.08};
+      p.vol=.42;
+      p.layers=[
+        layer(0,{}),
+        layer(.02,{wave:'noise',nRate0:.5+r()*.25,nRate1:.15+r()*.1,filt:{type:'lowpass',f0:900+r()*500,f1:190+r()*100,q:.7},env:{att:.006,sus:.12+r()*.08,dec:.34+r()*.14,punch:.1},vol:.16}),
+      ];
+      break;
+    case 'whoosh':
+      p.wave='noise';
+      p.nRate0=.28+r()*.18;p.nRate1=1.5+r()*.8;
+      p.filt={type:'highpass',f0:700+r()*500,f1:5200+r()*1600,q:.85};
+      p.env={att:.008,sus:.16+r()*.12,dec:.16+r()*.11,punch:.08};
+      p.vol=.42;
+      break;
   }
   return p;
 }
-function sfxDur(p){return p.env.att+p.env.sus+p.env.dec+.08;}
 function variantSeed(seed,k){return (seed+0x9E3779B9*(k+1))>>>0;}
+function musicPackSeed(seed,k){return k===0?(seed>>>0):variantSeed(seed,k-1);}
 function sfxChildSeed(seed,k){return variantSeed(seed,k);}
+function sfxLayerParams(p,l,i){
+  const q=Object.assign({},p,l,{layers:null});
+  q.seed=(l.seed!==undefined?l.seed:sfxChildSeed(p.seed,i))>>>0;
+  q.env=Object.assign({},p.env,l.env||{});
+  q.steps=l.steps===undefined?p.steps:l.steps;
+  q.vib=l.vib===undefined?p.vib:l.vib;
+  q.filt=l.filt===undefined?p.filt:l.filt;
+  return q;
+}
+function sfxDur(p){
+  if(p.layers&&p.layers.length){
+    let d=0;
+    for(let i=0;i<p.layers.length;i++){
+      const l=p.layers[i],q=sfxLayerParams(p,l,i);
+      d=Math.max(d,(l.delay||0)+q.env.att+q.env.sus+q.env.dec+.08);
+    }
+    return d;
+  }
+  return p.env.att+p.env.sus+p.env.dec+.08;
+}
 //===PURE-END===
 
 // ================= DSP（純 JS 逐取樣渲染，全 seeded、可重現）=================
@@ -446,6 +641,18 @@ function mixdown(ch,N){
   return {mix:[L,R],stems,scale:s,peak};
 }
 function renderSfxPCM(p,sr){
+  if(p.layers&&p.layers.length){
+    const dur=sfxDur(p)+0.1;
+    const N=Math.ceil(dur*sr);
+    const mono=new Float32Array(N);
+    for(let i=0;i<p.layers.length;i++){
+      const l=p.layers[i],q=sfxLayerParams(p,l,i);
+      const part=renderSfxPCM(q,sr);
+      const off=Math.max(0,Math.floor((l.delay||0)*sr));
+      for(let j=0;j<part.length&&j+off<N;j++)mono[j+off]+=part[j];
+    }
+    return mono;
+  }
   const dur=sfxDur(p)+0.1;
   const N=Math.ceil(dur*sr);
   const mono=new Float32Array(N);
@@ -555,6 +762,8 @@ const USAGE=`chipgen — 8-bit 音樂／音效 headless 產生器（零依賴）
   node chipgen.js music --mood <${Object.keys(MOODS).join('|')}>
        [--key C..B|random] [--bars 8|16|32] [--seed N] [--bpm N]
        [--variants N] [--stems] [--midi] [--no-mix] [--sr 44100] [--out DIR]
+  node chipgen.js music-pack
+       [--key C..B|random] [--seed N] [--stems] [--midi] [--no-mix] [--sr 44100] [--out DIR]
   node chipgen.js sfx --cat <${Object.keys(SFX_CATS).join('|')}|random>
        [--seed N] [--variants N] [--no-normalize] [--sr 44100] [--out DIR]
        [--tres FILE.tres] [--res-prefix res://audio/sfx/] [--pitch 1.05] [--vol-db 2]
@@ -566,15 +775,50 @@ function main(){
   const cmd=args._[0];
   const sr=clamp(parseInt(args.sr,10)||44100,8000,96000);
   const outDir=typeof args.out==='string'?args.out:'.';
+  const renderMusicAsset=(song,extra)=>{
+    const meta=extra||{};
+    const cuePart=meta.cue?meta.cue+'_':'';
+    const base='chip_'+cuePart+song.mood+'_'+KEYS[song.rootPc].replace('#','s')+'_'+song.seed;
+    const files={};
+    const {ch,N}=renderSongPCM(song,sr);
+    const {mix,stems,scale}=mixdown(ch,N);
+    if(!args['no-mix']){
+      const f=outPath(outDir,base+'_mix.wav');
+      fs.writeFileSync(f,wavBuffer(mix,sr));
+      files.mix=f;
+    }
+    if(args.stems){
+      files.stems={};
+      const names={p1:'pulse1_lead',p2:'pulse2_harmony',bass:'triangle_bass',drums:'noise_drums'};
+      for(const k in stems){
+        const f=outPath(outDir,base+'_'+names[k]+'.wav');
+        fs.writeFileSync(f,wavBuffer(stems[k],sr));
+        files.stems[k]=f;
+      }
+    }
+    if(args.midi){
+      const f=outPath(outDir,base+'.mid');
+      fs.writeFileSync(f,Buffer.from(songToMidi(song)));
+      files.midi=f;
+    }
+    return Object.assign({
+      type:'music',seed:song.seed,mood:song.mood,
+      mood_label:MOODS[song.mood].labelEn||MOODS[song.mood].label,
+      mood_label_zh:MOODS[song.mood].label,
+      key:KEYS[song.rootPc],scale:song.scaleName,scale_cn:SCALE_CN[song.scaleName],
+      bpm:song.bpm,bars:song.bars,duration:+songDur(song).toFixed(3),
+      sampleRate:sr,normalized:scale<1,files,
+    },meta);
+  };
 
   if(!cmd||args.help){process.stderr.write(USAGE+'\n');process.exit(cmd?0:1);}
 
   if(cmd==='list'){
     const moods={};
-    for(const [k,m] of Object.entries(MOODS))moods[k]={label:m.label,scale:m.scale,scale_cn:SCALE_CN[m.scale],bpm:m.bpm};
+    for(const [k,m] of Object.entries(MOODS))moods[k]={label:m.labelEn||m.label,label_zh:m.label,scale:m.scale,scale_cn:SCALE_CN[m.scale],bpm:m.bpm};
     const sfx={};
-    for(const [k,c] of Object.entries(SFX_CATS))sfx[k]={label:c.label};
-    console.log(JSON.stringify({moods,sfx,keys:KEYS.concat(['random']),bars:[8,16,32]},null,2));
+    for(const [k,c] of Object.entries(SFX_CATS))sfx[k]={label:c.labelEn||c.label,label_zh:c.label};
+    console.log(JSON.stringify({moods,sfx,musicPackCues:MUSIC_PACK_CUES,keys:KEYS.concat(['random']),bars:[8,16,32]},null,2));
     return;
   }
 
@@ -593,37 +837,7 @@ function main(){
     const variantKey=key==='random'?KEYS[baseSong.rootPc]:key;
     const lockedBpm=baseBpm||baseSong.bpm;
     const variants=clamp(parseInt(args.variants,10)||1,1,32);
-    const renderOne=(song,variantIndex)=>{
-      const base='chip_'+song.mood+'_'+KEYS[song.rootPc].replace('#','s')+'_'+song.seed;
-      const files={};
-      const {ch,N}=renderSongPCM(song,sr);
-      const {mix,stems,scale}=mixdown(ch,N);
-      if(!args['no-mix']){
-        const f=outPath(outDir,base+'_mix.wav');
-        fs.writeFileSync(f,wavBuffer(mix,sr));
-        files.mix=f;
-      }
-      if(args.stems){
-        files.stems={};
-        const names={p1:'pulse1_lead',p2:'pulse2_harmony',bass:'triangle_bass',drums:'noise_drums'};
-        for(const k in stems){
-          const f=outPath(outDir,base+'_'+names[k]+'.wav');
-          fs.writeFileSync(f,wavBuffer(stems[k],sr));
-          files.stems[k]=f;
-        }
-      }
-      if(args.midi){
-        const f=outPath(outDir,base+'.mid');
-        fs.writeFileSync(f,Buffer.from(songToMidi(song)));
-        files.midi=f;
-      }
-      return {
-        type:'music',variantIndex,seed:song.seed,mood:song.mood,mood_label:MOODS[song.mood].label,
-        key:KEYS[song.rootPc],scale:song.scaleName,scale_cn:SCALE_CN[song.scaleName],
-        bpm:song.bpm,bars:song.bars,duration:+songDur(song).toFixed(3),
-        sampleRate:sr,normalized:scale<1,files,
-      };
-    };
+    const renderOne=(song,variantIndex)=>renderMusicAsset(song,{variantIndex});
     if(variants===1){
       console.log(JSON.stringify(renderOne(baseSong,0),null,2));
       return;
@@ -635,10 +849,49 @@ function main(){
       items.push(renderOne(song,k));
     }
     console.log(JSON.stringify({
-      type:'music-variants',seed:baseSong.seed,mood:baseSong.mood,mood_label:MOODS[baseSong.mood].label,
+      type:'music-variants',seed:baseSong.seed,mood:baseSong.mood,
+      mood_label:MOODS[baseSong.mood].labelEn||MOODS[baseSong.mood].label,
+      mood_label_zh:MOODS[baseSong.mood].label,
       variants,variantStrategy:'Keep mood/key/bars/bpm fixed; derive each variant seed with (baseSeed + 0x9E3779B9 * index) >>> 0.',
       base:{seed:baseSong.seed,mood:baseSong.mood,key:KEYS[baseSong.rootPc],bpm:lockedBpm,bars:baseSong.bars},
       sampleRate:sr,items,
+    },null,2));
+    return;
+  }
+
+  if(cmd==='music-pack'){
+    const key=args.key||'random';
+    if(key!=='random'&&!KEYS.includes(key))die('未知調性 "'+key+'"');
+    const seed=args.seed!==undefined?(parseInt(args.seed,10)>>>0):Math.floor(Math.random()*1e6);
+    if(!Number.isFinite(seed))die('seed 需為整數');
+    const probe=generateSong({seed,mood:'adventure',key,bars:16,bpm:0});
+    const packKey=key==='random'?KEYS[probe.rootPc]:key;
+    const items=MUSIC_PACK_CUES.map((cue,i)=>{
+      const cueSong=generateSong({
+        seed:musicPackSeed(seed,i),
+        mood:cue.mood,
+        key:packKey,
+        bars:cue.bars,
+        bpm:0,
+      });
+      return renderMusicAsset(cueSong,{
+        cue:cue.cue,
+        cue_label:cue.label,
+        cue_label_zh:cue.labelZh,
+        packIndex:i,
+        baseSeed:seed,
+        packKey,
+      });
+    });
+    console.log(JSON.stringify({
+      type:'music-pack',
+      seed,
+      key:packKey,
+      cues:MUSIC_PACK_CUES.map(c=>({cue:c.cue,label:c.label,label_zh:c.labelZh,mood:c.mood,bars:c.bars})),
+      seedStrategy:'Cue 0 uses the base seed; later cues use (baseSeed + 0x9E3779B9 * index) >>> 0 with index starting at 1.',
+      styleLock:'All cues share the resolved key and seed family, while each scene keeps its own mood, BPM range, and bar length.',
+      sampleRate:sr,
+      items,
     },null,2));
     return;
   }
@@ -659,7 +912,7 @@ function main(){
       if(normalize)normalizeTo([mono],0.891);
       const f=outPath(outDir,'sfx_'+p.cat+'_'+p.seed+'.wav');
       fs.writeFileSync(f,wavBuffer([mono],sr));
-      files.push({file:f,seed:p.seed,cat:p.cat,wave:p.wave,duration:+sfxDur(p).toFixed(3)});
+      files.push({file:f,seed:p.seed,cat:p.cat,cat_label:SFX_CATS[p.cat].labelEn||SFX_CATS[p.cat].label,cat_label_zh:SFX_CATS[p.cat].label,wave:p.wave,duration:+sfxDur(p).toFixed(3),layers:p.layers?p.layers.length:1});
     }
     let tres=null;
     if(typeof args.tres==='string'){
@@ -672,7 +925,9 @@ function main(){
       tres=args.tres;
     }
     console.log(JSON.stringify({
-      type:'sfx',cat:resolvedCat,cat_label:SFX_CATS[resolvedCat].label,
+      type:'sfx',cat:resolvedCat,
+      cat_label:SFX_CATS[resolvedCat].labelEn||SFX_CATS[resolvedCat].label,
+      cat_label_zh:SFX_CATS[resolvedCat].label,
       seed,variants,sampleRate:sr,normalized:normalize,files,tres,
     },null,2));
     return;
