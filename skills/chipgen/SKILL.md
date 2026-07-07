@@ -9,6 +9,8 @@ Use the bundled Node script to generate deterministic 8-bit music and SFX locall
 
 The script is at `scripts/chipgen.js` relative to this skill folder. Run it with `node` and capture stdout as JSON. Errors are written to stderr.
 
+Use English-first wording for new feature work, generated manifests, and user-facing summaries. Preserve Traditional Chinese support as a secondary locale when editing the browser UI.
+
 ## Workflow
 
 1. Resolve the output directory. If the user does not specify one, use `generated-audio/` in the current project.

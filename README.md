@@ -10,6 +10,12 @@ https://888wing.github.io/8bit-music-generator/
 
 For local use, open `8bit-music-generator.html` in a browser.
 
+## Language support
+
+The browser app is English-first and defaults to English. Traditional Chinese is available from the language switch in the header.
+
+For future feature work, write new UI copy, manifests, and documentation in English first, then add Traditional Chinese translations where user-facing text needs both locales.
+
 ## Install the local skill
 
 Install the bundled skill into Codex:

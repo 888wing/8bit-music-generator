@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>8-BIT 音樂／音效產生器</title>
+<title>8-Bit Music / SFX Generator</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 :root{
@@ -52,6 +52,14 @@ body{
 }
 .tab.on{background:#f6ecd6;color:var(--red)}
 .tab:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+.lang{display:flex;gap:6px;margin-left:4px}
+.langbtn{
+  font-family:'Press Start 2P',ui-monospace,monospace;font-size:8px;
+  padding:7px 9px;border:2px solid #f6ecd6;background:transparent;
+  color:#f6ecd6;border-radius:6px;cursor:pointer;
+}
+.langbtn.on{background:#f6ecd6;color:var(--red)}
+.langbtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
 .body{padding:18px 20px 22px;display:flex;flex-direction:column;gap:16px}
 
 /* --- 控制列 --- */
@@ -167,11 +175,15 @@ canvas{display:block;width:100%;height:300px}
 <body>
 <div class="console">
   <div class="band">
-    <h1 class="px">8-BIT 產生器</h1>
-    <span class="sub px">2A03 · SEED 可重現 · MIDI / WAV</span>
+    <h1 class="px" data-i18n="appTitle">8-BIT Generator</h1>
+    <span class="sub px" data-i18n="appSubtitle">2A03 · Seeded · MIDI / WAV</span>
     <div class="tabs" role="tablist">
-      <button class="tab px on" id="tabMusic" role="tab" aria-selected="true">音樂</button>
-      <button class="tab px" id="tabSfx" role="tab" aria-selected="false">音效</button>
+      <button class="tab px on" id="tabMusic" role="tab" aria-selected="true" data-i18n="tabMusic">Music</button>
+      <button class="tab px" id="tabSfx" role="tab" aria-selected="false" data-i18n="tabSfx">SFX</button>
+    </div>
+    <div class="lang" role="group" aria-label="Language">
+      <button class="langbtn on" id="langEn" data-lang="en" aria-pressed="true">EN</button>
+      <button class="langbtn" id="langZh" data-lang="zh" aria-pressed="false">繁中</button>
     </div>
   </div>
   <div class="body">
@@ -180,15 +192,15 @@ canvas{display:block;width:100%;height:300px}
     <section id="secMusic" style="display:flex;flex-direction:column;gap:16px">
       <div class="controls">
         <div class="field">
-          <label class="px" for="mood">風格</label>
+          <label class="px" for="mood" data-i18n="mood">Mood</label>
           <select id="mood"></select>
         </div>
         <div class="field">
-          <label class="px" for="key">調性</label>
+          <label class="px" for="key" data-i18n="key">Key</label>
           <select id="key"></select>
         </div>
         <div class="field">
-          <label class="px" for="bars">小節數</label>
+          <label class="px" for="bars" data-i18n="bars">Bars</label>
           <select id="bars">
             <option value="8">8</option>
             <option value="16" selected>16</option>
@@ -197,52 +209,52 @@ canvas{display:block;width:100%;height:300px}
         </div>
         <div class="field">
           <label class="px" for="bpm">BPM</label>
-          <input type="number" id="bpm" min="0" max="240" placeholder="自動">
+          <input type="number" id="bpm" min="0" max="240" placeholder="Auto" data-i18n-placeholder="auto">
         </div>
         <div class="field">
-          <label class="px" for="seed">種子</label>
+          <label class="px" for="seed" data-i18n="seed">Seed</label>
           <div class="seedrow">
-            <input type="text" id="seed" inputmode="numeric" placeholder="隨機">
-            <button class="btn btn-sq" id="dice" title="擲一個新種子" aria-label="隨機種子">?</button>
+            <input type="text" id="seed" inputmode="numeric" placeholder="Random" data-i18n-placeholder="random">
+            <button class="btn btn-sq" id="dice" title="New seed" aria-label="New seed" data-i18n-title="newSeedTitle" data-i18n-aria-label="newSeedTitle">?</button>
           </div>
         </div>
       </div>
 
       <div class="transport actionbar">
-        <button class="btn btn-red" id="gen">產生樂曲</button>
-        <button class="btn" id="variants" disabled>變體 ×5</button>
-        <button class="btn" id="play" disabled>播放</button>
-        <button class="btn" id="stop" disabled>停止</button>
-        <button class="btn" id="copySeed" disabled>複製種子</button>
-        <label class="chk"><input type="checkbox" id="loop" checked>循環播放</label>
+        <button class="btn btn-red" id="gen" data-i18n="generateSong">Generate</button>
+        <button class="btn" id="variants" disabled data-i18n="variants5">Variants ×5</button>
+        <button class="btn" id="play" disabled data-i18n="play">Play</button>
+        <button class="btn" id="stop" disabled data-i18n="stop">Stop</button>
+        <button class="btn" id="copySeed" disabled data-i18n="copySeed">Copy seed</button>
+        <label class="chk"><input type="checkbox" id="loop" checked><span data-i18n="loop">Loop</span></label>
         <span class="spacer"></span>
-        <span class="hint">空白鍵＝播放／停止</span>
+        <span class="hint" data-i18n="spaceHint">Space = play / stop</span>
       </div>
 
       <div class="channels" id="chwrap">
         <div class="ch" data-ch="p1">
           <span class="sw" style="background:var(--p1)"></span>
-          <span class="nm px">PULSE 1 主旋律</span>
-          <input type="range" min="0" max="100" value="100" data-vol="p1" aria-label="Pulse 1 音量">
-          <label class="mute"><input type="checkbox" data-mute="p1">靜音</label>
+          <span class="nm px" data-i18n="pulse1">PULSE 1 Lead</span>
+          <input type="range" min="0" max="100" value="100" data-vol="p1" aria-label="Pulse 1 volume" data-i18n-aria-label="pulse1Volume">
+          <label class="mute"><input type="checkbox" data-mute="p1"><span data-i18n="mute">Mute</span></label>
         </div>
         <div class="ch" data-ch="p2">
           <span class="sw" style="background:var(--p2)"></span>
-          <span class="nm px">PULSE 2 和聲</span>
-          <input type="range" min="0" max="100" value="100" data-vol="p2" aria-label="Pulse 2 音量">
-          <label class="mute"><input type="checkbox" data-mute="p2">靜音</label>
+          <span class="nm px" data-i18n="pulse2">PULSE 2 Harmony</span>
+          <input type="range" min="0" max="100" value="100" data-vol="p2" aria-label="Pulse 2 volume" data-i18n-aria-label="pulse2Volume">
+          <label class="mute"><input type="checkbox" data-mute="p2"><span data-i18n="mute">Mute</span></label>
         </div>
         <div class="ch" data-ch="bass">
           <span class="sw" style="background:var(--tri)"></span>
-          <span class="nm px">TRIANGLE 貝斯</span>
-          <input type="range" min="0" max="100" value="100" data-vol="bass" aria-label="Triangle 音量">
-          <label class="mute"><input type="checkbox" data-mute="bass">靜音</label>
+          <span class="nm px" data-i18n="triangle">TRIANGLE Bass</span>
+          <input type="range" min="0" max="100" value="100" data-vol="bass" aria-label="Triangle volume" data-i18n-aria-label="triangleVolume">
+          <label class="mute"><input type="checkbox" data-mute="bass"><span data-i18n="mute">Mute</span></label>
         </div>
         <div class="ch" data-ch="drums">
           <span class="sw" style="background:var(--noi)"></span>
-          <span class="nm px">NOISE 鼓組</span>
-          <input type="range" min="0" max="100" value="100" data-vol="drums" aria-label="Noise 音量">
-          <label class="mute"><input type="checkbox" data-mute="drums">靜音</label>
+          <span class="nm px" data-i18n="noise">NOISE Drums</span>
+          <input type="range" min="0" max="100" value="100" data-vol="drums" aria-label="Noise volume" data-i18n-aria-label="noiseVolume">
+          <label class="mute"><input type="checkbox" data-mute="drums"><span data-i18n="mute">Mute</span></label>
         </div>
       </div>
     </section>
@@ -252,13 +264,13 @@ canvas{display:block;width:100%;height:300px}
       <div class="sfxgrid" id="sfxGrid"></div>
       <div class="transport">
         <div class="field" style="min-width:150px">
-          <label class="px" for="sfxSeed">種子</label>
-          <input type="text" id="sfxSeed" inputmode="numeric" placeholder="隨機">
+          <label class="px" for="sfxSeed" data-i18n="seed">Seed</label>
+          <input type="text" id="sfxSeed" inputmode="numeric" placeholder="Random" data-i18n-placeholder="random">
         </div>
-        <label class="chk" style="align-self:flex-end;padding-bottom:10px"><input type="checkbox" id="sfxLock">鎖定種子</label>
+        <label class="chk" style="align-self:flex-end;padding-bottom:10px"><input type="checkbox" id="sfxLock"><span data-i18n="lockSeed">Lock seed</span></label>
         <span class="spacer"></span>
-        <button class="btn" id="sfxReplay" disabled>重播</button>
-        <button class="btn" id="sfxCopySeed" disabled>複製種子</button>
+        <button class="btn" id="sfxReplay" disabled data-i18n="replay">Replay</button>
+        <button class="btn" id="sfxCopySeed" disabled data-i18n="copySeed">Copy seed</button>
       </div>
     </section>
 
@@ -269,41 +281,37 @@ canvas{display:block;width:100%;height:300px}
 
     <div class="lcd">
       <span class="led" id="led"></span>
-      <span class="px" id="status" aria-live="polite">READY — 按「產生樂曲」開始</span>
+      <span class="px" id="status" aria-live="polite">READY — Press Generate to start</span>
     </div>
 
     <div class="candidate-panel" aria-live="polite">
       <div class="candidate-head">
-        <h2 class="px">候選紀錄</h2>
-        <button class="btn btn-mini" id="clearHistory" disabled>清空</button>
+        <h2 class="px" data-i18n="candidateHistory">Candidate History</h2>
+        <button class="btn btn-mini" id="clearHistory" disabled data-i18n="clear">Clear</button>
       </div>
       <div class="candidate-list" id="candidateList">
-        <p class="candidate-empty">尚未有候選。生成樂曲或音效後，可在這裡載入、播放、複製 seed。</p>
+        <p class="candidate-empty" data-i18n="candidateEmpty">No candidates yet. Generate music or SFX, then load, play, or copy seeds here.</p>
       </div>
     </div>
 
     <div id="musicFoot">
       <div class="exports">
-        <button class="btn btn-gold" id="dlMidi" disabled>下載 MIDI</button>
-        <button class="btn btn-gold" id="dlWav" disabled>下載混音 WAV</button>
-        <button class="btn btn-gold" id="dlStems" disabled>下載分軌 ZIP</button>
+        <button class="btn btn-gold" id="dlMidi" disabled data-i18n="downloadMidi">Download MIDI</button>
+        <button class="btn btn-gold" id="dlWav" disabled data-i18n="downloadMix">Download mix WAV</button>
+        <button class="btn btn-gold" id="dlStems" disabled data-i18n="downloadStems">Download stems ZIP</button>
       </div>
-      <p class="hint" style="margin-top:10px">
-        DAW 後製流程：匯入 <b>MIDI</b> 後掛 chiptune 音源（例如免費的 Magical 8bit Plug 2）自由換音色；
-        或直接把<b>分軌 ZIP</b> 拉進 DAW 做 EQ／壓縮／殘響。「變體 ×5」會固定風格、調性、小節和 BPM，
-        只用衍生 seed 產生同一音樂方向的候選。
+      <p class="hint" style="margin-top:10px" data-i18n-html="musicHint">
+        DAW workflow: import <b>MIDI</b> into a chiptune instrument, or drag the <b>stems ZIP</b> into a DAW for EQ, compression, and reverb. Variants keep mood, key, bars, and BPM fixed while changing derived seeds.
       </p>
     </div>
 
     <div id="sfxFoot" style="display:none">
       <div class="exports">
-        <button class="btn btn-gold" id="sfxDl" disabled>下載 WAV</button>
-        <button class="btn btn-gold" id="sfxDlPack" disabled>下載變體 ZIP ×5</button>
+        <button class="btn btn-gold" id="sfxDl" disabled data-i18n="downloadWav">Download WAV</button>
+        <button class="btn btn-gold" id="sfxDlPack" disabled data-i18n="downloadSfxZip">Download variant ZIP ×5</button>
       </div>
-      <p class="hint" style="margin-top:10px">
-        點類別即生成並試聽，重點是快速擲骰篩靈感。「鎖定種子」後同一類別＋種子永遠出同一個音效；
-        「變體 ZIP」會用衍生種子渲染 5 個同類近親，方便遊戲內做隨機音效池。輸出 44.1k / 16-bit 單聲道 WAV，
-        直接進引擎或先到 DAW 加 bitcrush／殘響再收貨。
+      <p class="hint" style="margin-top:10px" data-i18n-html="sfxHint">
+        Click a category to generate and audition immediately. Lock seed to reproduce one result. Variant ZIP renders 5 related sounds for in-game random pools. Output is 44.1k / 16-bit mono WAV.
       </p>
     </div>
 
@@ -321,30 +329,35 @@ const mtof=m=>440*Math.pow(2,(m-69)/12);
 
 const KEYS=['C','C#','D','D#','E','F','F#','G','G#','A','A#','B'];
 const SCALES={major:[0,2,4,5,7,9,11],minor:[0,2,3,5,7,8,10],dorian:[0,2,3,5,7,9,10],harm:[0,2,3,5,7,8,11]};
-const SCALE_CN={major:'大調',minor:'小調',dorian:'多利安',harm:'和聲小調'};
+const SCALE_LABELS={
+  major:{en:'Major',zh:'大調'},
+  minor:{en:'Minor',zh:'小調'},
+  dorian:{en:'Dorian',zh:'多利安'},
+  harm:{en:'Harmonic minor',zh:'和聲小調'}
+};
 
 const MOODS={
-  adventure:{label:'冒險旅程',scale:'major',bpm:[142,164],
+  adventure:{label:'冒險旅程',labelEn:'Adventure',scale:'major',bpm:[142,164],
     progs:[[0,4,5,3],[0,3,0,4],[0,5,3,4],[3,4,0,0]],
     rhythms:[[3,3,2,4,4],[2,2,4,4,2,2],[4,2,2,4,-2,2],[2,2,2,2,4,4],[6,2,4,4]],
     p2:'arp',arpPat:[0,1,2,1],arpRate:2,bass:'oct8',drums:'drive',duty1:.5,duty2:.25,gate:.9},
-  battle:{label:'戰鬥',scale:'minor',bpm:[168,188],
+  battle:{label:'戰鬥',labelEn:'Battle',scale:'minor',bpm:[168,188],
     progs:[[0,5,6,4],[0,3,6,4],[0,6,0,4],[0,5,3,4]],
     rhythms:[[2,2,2,2,2,2,4],[2,2,4,2,2,2,2],[2,-2,2,2,2,2,4],[4,2,2,2,2,2,2],[2,2,2,2,8]],
     p2:'arp',arpPat:[0,2,1,2],arpRate:1,bass:'pump',drums:'battle',duty1:.25,duty2:.125,gate:.8},
-  town:{label:'村莊／日常',scale:'major',bpm:[104,124],
+  town:{label:'村莊／日常',labelEn:'Town / daily life',scale:'major',bpm:[104,124],
     progs:[[0,5,3,4],[0,3,4,4],[0,5,1,4],[0,1,3,4]],
     rhythms:[[4,2,2,4,4],[4,4,4,4],[6,2,4,4],[4,2,2,8],[3,3,2,8]],
     p2:'offbeat',arpPat:[0,1,2,1],arpRate:2,bass:'walk',drums:'soft',duty1:.5,duty2:.5,gate:.95},
-  dungeon:{label:'地城／神祕',scale:'dorian',bpm:[92,112],
+  dungeon:{label:'地城／神祕',labelEn:'Dungeon / mystery',scale:'dorian',bpm:[92,112],
     progs:[[0,6,5,6],[0,2,0,6],[0,6,0,4],[0,3,6,5]],
     rhythms:[[6,2,4,4],[4,4,8],[8,4,4],[4,-4,4,4],[2,2,4,8]],
     p2:'pad',arpPat:[0,1,2,1],arpRate:2,bass:'half',drums:'sparse',duty1:.125,duty2:.25,gate:.95},
-  sad:{label:'哀傷',scale:'minor',bpm:[76,92],
+  sad:{label:'哀傷',labelEn:'Sad / memory',scale:'minor',bpm:[76,92],
     progs:[[0,5,2,6],[0,3,5,6],[0,5,0,4],[0,2,5,4]],
     rhythms:[[8,4,4],[4,4,8],[6,2,8],[12,4],[4,8,4]],
     p2:'pad',arpPat:[0,1,2,1],arpRate:2,bass:'half',drums:'faint',duty1:.5,duty2:.25,gate:.98},
-  boss:{label:'魔王戰',scale:'harm',bpm:[176,196],
+  boss:{label:'魔王戰',labelEn:'Boss battle',scale:'harm',bpm:[176,196],
     progs:[[0,1,0,4],[0,5,1,4],[0,3,1,4],[0,6,1,4]],
     rhythms:[[2,2,2,2,2,2,2,2],[2,2,2,2,4,2,2],[2,2,2,-2,2,2,4],[4,2,2,2,2,4]],
     p2:'arp',arpPat:[0,1,2,3],arpRate:1,bass:'pump',drums:'boss',duty1:.125,duty2:.25,gate:.8},
@@ -553,14 +566,14 @@ function songDur(song){return song.bars*16*(60/song.bpm/4);}
 
 // ---------- SFX 參數生成 ----------
 const SFX_CATS={
-  coin:{label:'金幣／拾取'},
-  jump:{label:'跳躍'},
-  laser:{label:'雷射／射擊'},
-  hit:{label:'受擊'},
-  explosion:{label:'爆炸'},
-  powerup:{label:'強化'},
-  blip:{label:'介面嗶聲'},
-  fall:{label:'下墜／失敗'},
+  coin:{label:'金幣／拾取',labelEn:'Coin / pickup'},
+  jump:{label:'跳躍',labelEn:'Jump'},
+  laser:{label:'雷射／射擊',labelEn:'Laser / shot'},
+  hit:{label:'受擊',labelEn:'Hit / damage'},
+  explosion:{label:'爆炸',labelEn:'Explosion'},
+  powerup:{label:'強化',labelEn:'Power-up'},
+  blip:{label:'介面嗶聲',labelEn:'UI blip'},
+  fall:{label:'下墜／失敗',labelEn:'Fall / fail'},
 };
 function genSfx(cat,seed){
   seed=seed>>>0;
@@ -847,7 +860,7 @@ async function copyText(text,label){
     try{document.execCommand('copy');}catch(err){}
     ta.remove();
   }
-  setStatus('已複製 '+label+'：'+value);
+  setStatus(t('copied',{label,value}));
 }
 
 const enc=new TextEncoder();
@@ -910,6 +923,135 @@ function zipFiles(entries){
   return new Blob(parts,{type:'application/zip'});
 }
 
+const LANG_KEY='chipgen_lang_v1';
+const I18N={
+  en:{
+    docTitle:'8-Bit Music / SFX Generator',
+    appTitle:'8-BIT Generator',
+    appSubtitle:'2A03 · Seeded · MIDI / WAV',
+    tabMusic:'Music',tabSfx:'SFX',
+    mood:'Mood',key:'Key',bars:'Bars',seed:'Seed',
+    auto:'Auto',random:'Random',newSeedTitle:'New seed',
+    generateSong:'Generate',variants5:'Variants ×5',play:'Play',stop:'Stop',copySeed:'Copy seed',
+    loop:'Loop',spaceHint:'Space = play / stop',mute:'Mute',
+    pulse1:'PULSE 1 Lead',pulse2:'PULSE 2 Harmony',triangle:'TRIANGLE Bass',noise:'NOISE Drums',
+    pulse1Volume:'Pulse 1 volume',pulse2Volume:'Pulse 2 volume',triangleVolume:'Triangle volume',noiseVolume:'Noise volume',
+    lockSeed:'Lock seed',replay:'Replay',
+    candidateHistory:'Candidate History',clear:'Clear',
+    candidateEmpty:'No candidates yet. Generate music or SFX, then load, play, or copy seeds here.',
+    load:'Load',copy:'Copy seed',
+    downloadMidi:'Download MIDI',downloadMix:'Download mix WAV',downloadStems:'Download stems ZIP',
+    downloadWav:'Download WAV',downloadSfxZip:'Download variant ZIP ×5',
+    musicHint:'DAW workflow: import <b>MIDI</b> into a chiptune instrument, or drag the <b>stems ZIP</b> into a DAW for EQ, compression, and reverb. Variants keep mood, key, bars, and BPM fixed while changing derived seeds.',
+    sfxHint:'Click a category to generate and audition immediately. Lock seed to reproduce one result. Variant ZIP renders 5 related sounds for in-game random pools. Output is 44.1k / 16-bit mono WAV.',
+    readyMusic:'READY — Press Generate to start',
+    readySfx:'READY — Pick a category to generate SFX',
+    copied:'Copied {label}: {value}',
+    seedLabel:'seed',
+    musicSeed:'music seed',
+    sfxSeed:'SFX seed',
+    candidateMusicMeta:'{bpm} BPM · {bars} bars · {duration}s · seed {seed}',
+    candidateSfxMeta:'{duration}s · seed {seed}',
+    loadCandidate:'Loaded candidate — {label}',
+    playCandidate:'Playing candidate — {label}',
+    historyCleared:'Candidate history cleared',
+    songLabel:'{key} {scale} · {bpm} BPM · {bars} bars · seed {seed}',
+    variantsGenerated:'Generated 5 related music candidates — base seed {seed}',
+    nowPlaying:'Playing — {label}',
+    downloadedMidi:'Downloaded MIDI — {label}',
+    renderingMix:'Rendering mix...',
+    downloadedMix:'Downloaded mix WAV — {label}',
+    renderFailed:'Render failed: {message}',
+    renderingStem:'Rendering stem {index}/4...',
+    downloadedStems:'Downloaded stems ZIP — {label}',
+    sfxLabel:'{cat} · {wave} · {duration}s · seed {seed}',
+    generateFailed:'Generation failed: {message}',
+    downloadedWav:'Downloaded WAV — {label}',
+    renderingVariant:'Rendering variant {index}/5...',
+    downloadedSfxZip:'Downloaded variant ZIP ×5 — {label}',
+    standbyMusic:'— Signal idle: press Generate —',
+    standbySfx:'— Signal idle: pick a category —',
+    randomCat:'Random',
+    waveNoise:'Noise',waveTri:'Triangle',wavePulse:'Pulse {duty}%'
+  },
+  zh:{
+    docTitle:'8-BIT 音樂／音效產生器',
+    appTitle:'8-BIT 產生器',
+    appSubtitle:'2A03 · SEED 可重現 · MIDI / WAV',
+    tabMusic:'音樂',tabSfx:'音效',
+    mood:'風格',key:'調性',bars:'小節數',seed:'種子',
+    auto:'自動',random:'隨機',newSeedTitle:'擲一個新種子',
+    generateSong:'產生樂曲',variants5:'變體 ×5',play:'播放',stop:'停止',copySeed:'複製種子',
+    loop:'循環播放',spaceHint:'空白鍵＝播放／停止',mute:'靜音',
+    pulse1:'PULSE 1 主旋律',pulse2:'PULSE 2 和聲',triangle:'TRIANGLE 貝斯',noise:'NOISE 鼓組',
+    pulse1Volume:'Pulse 1 音量',pulse2Volume:'Pulse 2 音量',triangleVolume:'Triangle 音量',noiseVolume:'Noise 音量',
+    lockSeed:'鎖定種子',replay:'重播',
+    candidateHistory:'候選紀錄',clear:'清空',
+    candidateEmpty:'尚未有候選。生成樂曲或音效後，可在這裡載入、播放、複製 seed。',
+    load:'載入',copy:'複製 seed',
+    downloadMidi:'下載 MIDI',downloadMix:'下載混音 WAV',downloadStems:'下載分軌 ZIP',
+    downloadWav:'下載 WAV',downloadSfxZip:'下載變體 ZIP ×5',
+    musicHint:'DAW 後製流程：匯入 <b>MIDI</b> 後掛 chiptune 音源（例如免費的 Magical 8bit Plug 2）自由換音色；或直接把<b>分軌 ZIP</b> 拉進 DAW 做 EQ／壓縮／殘響。「變體 ×5」會固定風格、調性、小節和 BPM，只用衍生 seed 產生同一音樂方向的候選。',
+    sfxHint:'點類別即生成並試聽，重點是快速擲骰篩靈感。「鎖定種子」後同一類別＋種子永遠出同一個音效；「變體 ZIP」會用衍生種子渲染 5 個同類近親，方便遊戲內做隨機音效池。輸出 44.1k / 16-bit 單聲道 WAV。',
+    readyMusic:'READY — 按「產生樂曲」開始',
+    readySfx:'READY — 點一個類別產生音效',
+    copied:'已複製 {label}：{value}',
+    seedLabel:'seed',
+    musicSeed:'音樂 seed',
+    sfxSeed:'音效 seed',
+    candidateMusicMeta:'{bpm} BPM · {bars} 小節 · {duration}s · seed {seed}',
+    candidateSfxMeta:'{duration}s · seed {seed}',
+    loadCandidate:'已載入候選 — {label}',
+    playCandidate:'播放候選 — {label}',
+    historyCleared:'候選紀錄已清空',
+    songLabel:'{key} {scale} · {bpm} BPM · {bars} 小節 · 種子 {seed}',
+    variantsGenerated:'已生成 5 個同風格變體候選 — 基準 seed {seed}',
+    nowPlaying:'播放中 — {label}',
+    downloadedMidi:'已下載 MIDI — {label}',
+    renderingMix:'渲染混音中…',
+    downloadedMix:'已下載混音 WAV — {label}',
+    renderFailed:'渲染失敗：{message}',
+    renderingStem:'渲染分軌 {index}/4…',
+    downloadedStems:'已下載分軌 ZIP — {label}',
+    sfxLabel:'{cat} · {wave} · {duration}s · 種子 {seed}',
+    generateFailed:'生成失敗：{message}',
+    downloadedWav:'已下載 WAV — {label}',
+    renderingVariant:'渲染變體 {index}/5…',
+    downloadedSfxZip:'已下載變體 ZIP ×5 — {label}',
+    standbyMusic:'— 訊號待機：按「產生樂曲」—',
+    standbySfx:'— 訊號待機：點一個類別產生音效 —',
+    randomCat:'隨機',
+    waveNoise:'雜訊',waveTri:'三角波',wavePulse:'方波 {duty}%'
+  }
+};
+let currentLang=localStorage.getItem(LANG_KEY)==='zh'?'zh':'en';
+function t(key,vars){
+  let s=(I18N[currentLang]&&I18N[currentLang][key])||I18N.en[key]||key;
+  if(vars)for(const [k,v] of Object.entries(vars))s=s.replaceAll('{'+k+'}',String(v));
+  return s;
+}
+function moodLabel(key){const m=MOODS[key];return currentLang==='zh'?m.label:m.labelEn;}
+function sfxCatLabel(key){const c=SFX_CATS[key];return currentLang==='zh'?c.label:c.labelEn;}
+function scaleLabel(key){return SCALE_LABELS[key][currentLang]||SCALE_LABELS[key].en;}
+function waveLabel(p){
+  if(p.wave==='noise')return t('waveNoise');
+  if(p.wave==='tri')return t('waveTri');
+  return t('wavePulse',{duty:Math.round(p.duty*100)});
+}
+function applyStaticI18n(){
+  document.documentElement.lang=currentLang==='zh'?'zh-Hant':'en';
+  document.title=t('docTitle');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{el.textContent=t(el.dataset.i18n);});
+  document.querySelectorAll('[data-i18n-html]').forEach(el=>{el.innerHTML=t(el.dataset.i18nHtml);});
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el=>{el.placeholder=t(el.dataset.i18nPlaceholder);});
+  document.querySelectorAll('[data-i18n-title]').forEach(el=>{el.title=t(el.dataset.i18nTitle);});
+  document.querySelectorAll('[data-i18n-aria-label]').forEach(el=>{el.setAttribute('aria-label',t(el.dataset.i18nAriaLabel));});
+  $('langEn').classList.toggle('on',currentLang==='en');
+  $('langZh').classList.toggle('on',currentLang==='zh');
+  $('langEn').setAttribute('aria-pressed',currentLang==='en');
+  $('langZh').setAttribute('aria-pressed',currentLang==='zh');
+}
+
 // ---------- 模式切換 ----------
 let mode='music';
 const secMusic=$('secMusic'),secSfx=$('secSfx'),musicFoot=$('musicFoot'),sfxFoot=$('sfxFoot');
@@ -923,12 +1065,13 @@ function saveCandidates(){
   localStorage.setItem(HISTORY_KEY,JSON.stringify(candidates.slice(0,12)));
 }
 function itemTitle(item){
-  if(item.type==='music')return MOODS[item.mood].label+' · '+item.key+' '+SCALE_CN[item.scaleName];
-  return SFX_CATS[item.cat].label+' · '+item.waveLabel;
+  if(item.type==='music')return moodLabel(item.mood)+' · '+item.key+' '+scaleLabel(item.scaleName);
+  const wave=item.wave?waveLabel(item):item.waveLabel||'';
+  return sfxCatLabel(item.cat)+' · '+wave;
 }
 function itemMeta(item){
-  if(item.type==='music')return item.bpm+' BPM · '+item.bars+' 小節 · '+item.duration.toFixed(2)+'s · seed '+item.seed;
-  return item.duration.toFixed(2)+'s · seed '+item.seed;
+  if(item.type==='music')return t('candidateMusicMeta',{bpm:item.bpm,bars:item.bars,duration:item.duration.toFixed(2),seed:item.seed});
+  return t('candidateSfxMeta',{duration:item.duration.toFixed(2),seed:item.seed});
 }
 function pushCandidate(item){
   candidates=candidates.filter(x=>x.id!==item.id);
@@ -940,18 +1083,18 @@ function pushCandidate(item){
 function renderCandidates(){
   clearHistoryBtn.disabled=candidates.length===0;
   if(!candidates.length){
-    candidateList.innerHTML='<p class="candidate-empty">尚未有候選。生成樂曲或音效後，可在這裡載入、播放、複製 seed。</p>';
+    candidateList.innerHTML='<p class="candidate-empty">'+t('candidateEmpty')+'</p>';
     return;
   }
   candidateList.innerHTML=candidates.map(item=>{
-    const play=item.type==='music'?'<button class="btn btn-mini" data-action="play" data-id="'+item.id+'">播放</button>':'';
+    const play=item.type==='music'?'<button class="btn btn-mini" data-action="play" data-id="'+item.id+'">'+t('play')+'</button>':'';
     return '<article class="candidate" data-id="'+item.id+'">'+
       '<strong>'+itemTitle(item)+'</strong>'+
       '<div class="candidate-meta">'+itemMeta(item)+'</div>'+
       '<div class="candidate-actions">'+
-        '<button class="btn btn-mini" data-action="load" data-id="'+item.id+'">載入</button>'+
+        '<button class="btn btn-mini" data-action="load" data-id="'+item.id+'">'+t('load')+'</button>'+
         play+
-        '<button class="btn btn-mini" data-action="copy" data-id="'+item.id+'">複製 seed</button>'+
+        '<button class="btn btn-mini" data-action="copy" data-id="'+item.id+'">'+t('copy')+'</button>'+
       '</div>'+
     '</article>';
   }).join('');
@@ -967,14 +1110,14 @@ function sfxCandidateFromCurrent(){
   const p=curSfx.p;
   return {
     id:'sfx-'+p.cat+'-'+p.seed,type:'sfx',seed:p.seed,cat:p.cat,
-    waveLabel:WAVE_CN(p),duration:sfxDur(p),
+    wave:p.wave,duty:p.duty,waveLabel:WAVE_CN(p),duration:sfxDur(p),
   };
 }
 function loadMusicCandidate(item,autoplay){
   setMode('music');
   moodSel.value=item.mood;keySel.value=item.key;barsSel.value=item.bars;bpmIn.value=item.bpm;seedIn.value=item.seed;
   makeMusicFromFields({record:false});
-  setStatus((autoplay?'播放候選 — ':'已載入候選 — ')+songLabel());
+  setStatus(t(autoplay?'playCandidate':'loadCandidate',{label:songLabel()}));
   if(autoplay)playSong();
 }
 function loadSfxCandidate(item){
@@ -992,7 +1135,7 @@ candidateList.addEventListener('click',e=>{
   else loadSfxCandidate(item);
 });
 clearHistoryBtn.addEventListener('click',()=>{
-  candidates=[];saveCandidates();renderCandidates();setStatus('候選紀錄已清空');
+  candidates=[];saveCandidates();renderCandidates();setStatus(t('historyCleared'));
 });
 
 function setMode(m){
@@ -1008,28 +1151,46 @@ function setMode(m){
   tabSfx.setAttribute('aria-selected',!music);
   stopSong();
   if(music){
-    setStatus(song?songLabel():'READY — 按「產生樂曲」開始');
+    setStatus(song?songLabel():t('readyMusic'));
     draw();
   }else{
-    setStatus(curSfx?sfxLabel():'READY — 點一個類別產生音效');
+    setStatus(curSfx?sfxLabel():t('readySfx'));
     drawScope();
   }
 }
 tabMusic.addEventListener('click',()=>setMode('music'));
 tabSfx.addEventListener('click',()=>setMode('sfx'));
-renderCandidates();
+function setLanguage(lang){
+  currentLang=lang==='zh'?'zh':'en';
+  localStorage.setItem(LANG_KEY,currentLang);
+  applyStaticI18n();
+  refreshMusicOptions();
+  refreshSfxButtons();
+  renderCandidates();
+  if(mode==='music')setStatus(song?songLabel():t('readyMusic'));
+  else setStatus(curSfx?sfxLabel():t('readySfx'));
+  mode==='music'?draw():drawScope();
+}
+$('langEn').addEventListener('click',()=>setLanguage('en'));
+$('langZh').addEventListener('click',()=>setLanguage('zh'));
 
 // ================= 音樂模式 =================
 const moodSel=$('mood'),keySel=$('key'),barsSel=$('bars'),bpmIn=$('bpm'),seedIn=$('seed');
 const genBtn=$('gen'),variantBtn=$('variants'),playBtn=$('play'),stopBtn=$('stop'),copySeedBtn=$('copySeed'),loopChk=$('loop');
 const dlMidiBtn=$('dlMidi'),dlWavBtn=$('dlWav'),dlStemsBtn=$('dlStems');
 
-for(const [k,m] of Object.entries(MOODS)){
-  const o=document.createElement('option');o.value=k;o.textContent=m.label;moodSel.appendChild(o);
-}
-{
-  const o=document.createElement('option');o.value='random';o.textContent='隨機';keySel.appendChild(o);
+function refreshMusicOptions(){
+  const prevMood=moodSel.value||'adventure';
+  const prevKey=keySel.value||'random';
+  moodSel.innerHTML='';
+  for(const k of Object.keys(MOODS)){
+    const o=document.createElement('option');o.value=k;o.textContent=moodLabel(k);moodSel.appendChild(o);
+  }
+  moodSel.value=MOODS[prevMood]?prevMood:'adventure';
+  keySel.innerHTML='';
+  const o=document.createElement('option');o.value='random';o.textContent=t('random');keySel.appendChild(o);
   for(const k of KEYS){const e=document.createElement('option');e.value=k;e.textContent=k;keySel.appendChild(e);}
+  keySel.value=prevKey==='random'||KEYS.includes(prevKey)?prevKey:'random';
 }
 
 let song=null;
@@ -1046,7 +1207,7 @@ const getMutes=()=>{
   return m;
 };
 function songLabel(){
-  return KEYS[song.rootPc]+' '+SCALE_CN[song.scaleName]+' · '+song.bpm+' BPM · '+song.bars+' 小節 · 種子 '+song.seed;
+  return t('songLabel',{key:KEYS[song.rootPc],scale:scaleLabel(song.scaleName),bpm:song.bpm,bars:song.bars,seed:song.seed});
 }
 function fileBase(){
   return 'chip_'+song.mood+'_'+KEYS[song.rootPc].replace('#','s')+'_'+song.seed;
@@ -1056,10 +1217,12 @@ function songManifest(extra){
     type:'music',
     seed:song.seed,
     mood:song.mood,
-    mood_label:MOODS[song.mood].label,
+    mood_label:MOODS[song.mood].labelEn,
+    mood_label_zh:MOODS[song.mood].label,
     key:KEYS[song.rootPc],
     scale:song.scaleName,
-    scale_cn:SCALE_CN[song.scaleName],
+    scale_label:SCALE_LABELS[song.scaleName].en,
+    scale_label_zh:SCALE_LABELS[song.scaleName].zh,
     bpm:song.bpm,
     bars:song.bars,
     duration:+songDur(song).toFixed(3),
@@ -1109,9 +1272,9 @@ variantBtn.addEventListener('click',()=>{
     });
     pushCandidate(musicCandidateFromSong(variant,'variant'));
   }
-  setStatus('已生成 5 個同風格變體候選 — 基準 seed '+baseSeed);
+  setStatus(t('variantsGenerated',{seed:baseSeed}));
 });
-copySeedBtn.addEventListener('click',()=>{if(song)copyText(song.seed,'音樂 seed');});
+copySeedBtn.addEventListener('click',()=>{if(song)copyText(song.seed,t('musicSeed'));});
 
 async function playSong(){
   if(!song)return;
@@ -1123,7 +1286,7 @@ async function playSong(){
   playT0=t0;
   scheduleSong(g,song,t0,getMutes());
   playing=true;ledEl.classList.add('on');
-  setStatus('播放中 — '+songLabel());
+  setStatus(t('nowPlaying',{label:songLabel()}));
   let lastStart=t0,scheduledEnd=t0+songDur(song);
   loopTimer=setInterval(()=>{
     if(!playing||!liveCtx)return;
@@ -1168,7 +1331,7 @@ document.addEventListener('keydown',e=>{
 dlMidiBtn.addEventListener('click',()=>{
   if(!song)return;
   download(fileBase()+'.mid',songToMidi(song),'audio/midi');
-  setStatus('已下載 MIDI — '+songLabel());
+  setStatus(t('downloadedMidi',{label:songLabel()}));
 });
 async function renderWav(solo){
   const dur=songDur(song)+0.4;
@@ -1181,11 +1344,11 @@ async function renderWav(solo){
 }
 dlWavBtn.addEventListener('click',async()=>{
   if(!song||busy)return;
-  busy=true;setStatus('渲染混音中…');
+  busy=true;setStatus(t('renderingMix'));
   try{
     download(fileBase()+'_mix.wav',await renderWav(null),'audio/wav');
-    setStatus('已下載混音 WAV — '+songLabel());
-  }catch(e){setStatus('渲染失敗：'+e.message);}
+    setStatus(t('downloadedMix',{label:songLabel()}));
+  }catch(e){setStatus(t('renderFailed',{message:e.message}));}
   busy=false;
 });
 dlStemsBtn.addEventListener('click',async()=>{
@@ -1195,13 +1358,13 @@ dlStemsBtn.addEventListener('click',async()=>{
   try{
     const entries=[];
     for(let i=0;i<stems.length;i++){
-      setStatus('渲染分軌 '+(i+1)+'/4…');
+      setStatus(t('renderingStem',{index:i+1}));
       entries.push({name:fileBase()+'_'+stems[i][1]+'.wav',data:await renderWav(stems[i][0])});
     }
     entries.push({name:fileBase()+'_manifest.json',data:songManifest({files:entries.map(e=>e.name)})});
     download(fileBase()+'_stems.zip',zipFiles(entries),'application/zip');
-    setStatus('已下載分軌 ZIP — '+songLabel());
-  }catch(e){setStatus('渲染失敗：'+e.message);}
+    setStatus(t('downloadedStems',{label:songLabel()}));
+  }catch(e){setStatus(t('renderFailed',{message:e.message}));}
   busy=false;
 });
 
@@ -1210,14 +1373,15 @@ const sfxGrid=$('sfxGrid'),sfxSeedIn=$('sfxSeed'),sfxLock=$('sfxLock');
 const sfxReplayBtn=$('sfxReplay'),sfxCopySeedBtn=$('sfxCopySeed'),sfxDlBtn=$('sfxDl'),sfxDlPackBtn=$('sfxDlPack');
 let curSfx=null,fxCtx=null,sfxBusy=false;
 
-for(const [k,c] of Object.entries(SFX_CATS)){
+function refreshSfxButtons(){
+  sfxGrid.innerHTML='';
+  for(const k of Object.keys(SFX_CATS)){
+    const b=document.createElement('button');
+    b.className='btn';b.textContent=sfxCatLabel(k);b.dataset.cat=k;
+    sfxGrid.appendChild(b);
+  }
   const b=document.createElement('button');
-  b.className='btn';b.textContent=c.label;b.dataset.cat=k;
-  sfxGrid.appendChild(b);
-}
-{
-  const b=document.createElement('button');
-  b.className='btn btn-red';b.textContent='隨機';b.dataset.cat='random';
+  b.className='btn btn-red';b.textContent=t('randomCat');b.dataset.cat='random';
   sfxGrid.appendChild(b);
 }
 sfxGrid.addEventListener('click',e=>{
@@ -1231,16 +1395,17 @@ sfxGrid.addEventListener('click',e=>{
   makeSfx(cat,seed);
 });
 
-const WAVE_CN=p=>p.wave==='noise'?'雜訊':p.wave==='tri'?'三角波':'方波 '+Math.round(p.duty*100)+'%';
+const WAVE_CN=p=>waveLabel(p);
 function sfxLabel(){
   const p=curSfx.p;
-  return SFX_CATS[p.cat].label+' · '+WAVE_CN(p)+' · '+sfxDur(p).toFixed(2)+'s · 種子 '+p.seed;
+  return t('sfxLabel',{cat:sfxCatLabel(p.cat),wave:WAVE_CN(p),duration:sfxDur(p).toFixed(2),seed:p.seed});
 }
 function sfxManifest(base,files){
   return JSON.stringify({
     type:'sfx-pack',
     cat:base.cat,
-    cat_label:SFX_CATS[base.cat].label,
+    cat_label:SFX_CATS[base.cat].labelEn,
+    cat_label_zh:SFX_CATS[base.cat].label,
     base_seed:base.seed,
     variants:files.length,
     variant_seed_rule:'variantSeed = (baseSeed + 0x9E3779B9 * (index + 1)) >>> 0',
@@ -1266,16 +1431,16 @@ async function makeSfx(cat,seed,opts){
     drawScope();
     if(options.record!==false)pushCandidate(sfxCandidateFromCurrent());
     playSfxBuffer(buf);
-  }catch(e){setStatus('生成失敗：'+e.message);}
+  }catch(e){setStatus(t('generateFailed',{message:e.message}));}
   sfxBusy=false;
 }
 sfxReplayBtn.addEventListener('click',()=>{if(curSfx)playSfxBuffer(curSfx.buf);});
-sfxCopySeedBtn.addEventListener('click',()=>{if(curSfx)copyText(curSfx.p.seed,'音效 seed');});
+sfxCopySeedBtn.addEventListener('click',()=>{if(curSfx)copyText(curSfx.p.seed,t('sfxSeed'));});
 sfxDlBtn.addEventListener('click',()=>{
   if(!curSfx)return;
   const p=curSfx.p;
   download('sfx_'+p.cat+'_'+p.seed+'.wav',bufToWav(curSfx.buf),'audio/wav');
-  setStatus('已下載 WAV — '+sfxLabel());
+  setStatus(t('downloadedWav',{label:sfxLabel()}));
 });
 sfxDlPackBtn.addEventListener('click',async()=>{
   if(!curSfx||sfxBusy)return;
@@ -1284,7 +1449,7 @@ sfxDlPackBtn.addEventListener('click',async()=>{
   try{
     const entries=[],files=[];
     for(let k=0;k<5;k++){
-      setStatus('渲染變體 '+(k+1)+'/5…');
+      setStatus(t('renderingVariant',{index:k+1}));
       const seed=k===0?base.seed:sfxChildSeed(base.seed,k-1);
       const p=genSfx(base.cat,seed);
       const buf=await renderSfx(p);
@@ -1294,8 +1459,8 @@ sfxDlPackBtn.addEventListener('click',async()=>{
     }
     entries.push({name:'sfx_'+base.cat+'_'+base.seed+'_manifest.json',data:sfxManifest(base,files)});
     download('sfx_'+base.cat+'_'+base.seed+'_variants.zip',zipFiles(entries),'application/zip');
-    setStatus('已下載變體 ZIP ×5 — '+sfxLabel());
-  }catch(e){setStatus('渲染失敗：'+e.message);}
+    setStatus(t('downloadedSfxZip',{label:sfxLabel()}));
+  }catch(e){setStatus(t('renderFailed',{message:e.message}));}
   sfxBusy=false;
 });
 
@@ -1322,7 +1487,7 @@ function draw(){
     c.fillStyle='#3f5744';
     c.font='12px ui-monospace,monospace';
     c.textAlign='center';
-    c.fillText('— 訊號待機：按「產生樂曲」—',W/2,H/2);
+    c.fillText(t('standbyMusic'),W/2,H/2);
     c.textAlign='left';
     return;
   }
@@ -1378,7 +1543,7 @@ function drawScope(){
     c.fillStyle='#3f5744';
     c.font='12px ui-monospace,monospace';
     c.textAlign='center';
-    c.fillText('— 訊號待機：點一個類別產生音效 —',W/2,H/2);
+    c.fillText(t('standbySfx'),W/2,H/2);
     c.textAlign='left';
     return;
   }
@@ -1406,7 +1571,7 @@ function drawScope(){
   }
   c.fillStyle='rgba(180,215,190,.5)';
   c.font='10px ui-monospace,monospace';
-  c.fillText(SFX_CATS[curSfx.p.cat].label+'  '+dur.toFixed(2)+'s',6,14);
+  c.fillText(sfxCatLabel(curSfx.p.cat)+'  '+dur.toFixed(2)+'s',6,14);
 }
 function tick(){
   if(!playing)return;
@@ -1414,6 +1579,11 @@ function tick(){
   rafId=requestAnimationFrame(tick);
 }
 window.addEventListener('resize',()=>{mode==='music'?draw():drawScope();});
+applyStaticI18n();
+refreshMusicOptions();
+refreshSfxButtons();
+renderCandidates();
+setStatus(song?t('songLabel',{key:KEYS[song.rootPc],scale:scaleLabel(song.scaleName),bpm:song.bpm,bars:song.bars,seed:song.seed}):t('readyMusic'));
 draw();
 </script>
 </body>
