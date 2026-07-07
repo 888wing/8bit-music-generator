@@ -4,7 +4,11 @@ A browser prototype and local Codex skill for generating seeded 8-bit music and 
 
 ## Browser prototype
 
-Open `8bit-music-generator.html` in a browser to try the interactive music and SFX generator.
+Try the browser demo:
+
+https://888wing.github.io/8bit-music-generator/
+
+For local use, open `8bit-music-generator.html` in a browser.
 
 ## Install the local skill
 
